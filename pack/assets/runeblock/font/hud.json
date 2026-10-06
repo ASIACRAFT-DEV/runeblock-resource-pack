@@ -1,0 +1,15 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": -1, "": -2, "": -4, "": -8, "": -16, "": -32,
+        "": 1, "": 2, "": 4, "": 8, "": 16, "": 32
+      }
+    },
+    { "type": "bitmap", "file": "runeblock:hud/slot_ready.png", "ascent": 14, "height": 20, "chars": [""] },
+    { "type": "bitmap", "file": "runeblock:hud/slot_cooldown.png", "ascent": 14, "height": 20, "chars": [""] },
+    { "type": "bitmap", "file": "runeblock:hud/slot_nomana.png", "ascent": 14, "height": 20, "chars": [""] },
+    { "type": "bitmap", "file": "runeblock:hud/slot_empty.png", "ascent": 14, "height": 20, "chars": [""] }
+  ]
+}

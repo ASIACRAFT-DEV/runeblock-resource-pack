@@ -102,7 +102,57 @@ def codex():
     return im
 
 
+# ── 0.12.0 combat HUD ────────────────────────────────────────────────────────────────────────────────────────
+HUD_OUT = os.path.join(os.path.dirname(__file__), '..', 'pack', 'assets', 'runeblock', 'textures', 'hud')
+SPRITES = os.path.join(os.path.dirname(__file__), '..', 'pack', 'assets', 'minecraft', 'textures', 'gui', 'sprites', 'hud')
+MANA_DARK, MANA, MANA_HI = rgb(0x1B3A78), rgb(0x3F7CE0), rgb(0x9CC4FF)
+
+
+def slot_frame(border, fill, inner=None):
+    """20x20 skill-slot frame for the action-bar hotbar (font runeblock:hud). The server writes the combo letters or
+    the cooldown seconds over its middle."""
+    im = Image.new('RGBA', (20, 20), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rectangle([0, 0, 19, 19], fill=fill, outline=border)
+    if inner:
+        d.rectangle([1, 1, 18, 18], outline=inner)
+    for x, y in ((0, 0), (19, 0), (0, 19), (19, 19)):
+        d.point((x, y), fill=(0, 0, 0, 0))   # rounded corners
+    return im
+
+
+def xp_bars():
+    """The XP bar is the mana bar for vanilla players (ArcaneSouls ManaService), so it is drawn blue."""
+    bg = Image.new('RGBA', (182, 5), (0, 0, 0, 0))
+    d = ImageDraw.Draw(bg)
+    d.rectangle([0, 0, 181, 4], fill=rgb(0x0B0F1E), outline=rgb(0x1C2238))
+    for x in range(20, 181, 20):
+        d.line([(x, 1), (x, 3)], fill=rgb(0x232B48))
+    pr = Image.new('RGBA', (182, 5), (0, 0, 0, 0))
+    d = ImageDraw.Draw(pr)
+    d.rectangle([0, 0, 181, 4], fill=MANA, outline=MANA_DARK)
+    d.line([(1, 1), (180, 1)], fill=MANA_HI)
+    for x in range(20, 181, 20):
+        d.line([(x, 1), (x, 3)], fill=MANA_DARK)
+    return bg, pr
+
+
 if __name__ == '__main__':
+    os.makedirs(HUD_OUT, exist_ok=True)
+    os.makedirs(SPRITES, exist_ok=True)
+    frames = {
+        'slot_ready': slot_frame(GOLD, rgb(0x2A1A10), inner=rgb(0x5A3E1C)),
+        'slot_cooldown': slot_frame(rgb(0x3A3030), rgb(0x0E0A0A)),
+        'slot_nomana': slot_frame(MANA, rgb(0x0E1428), inner=MANA_DARK),
+        'slot_empty': slot_frame(rgb(0x2A2222), (14, 10, 10, 140)),
+    }
+    for name, im in frames.items():
+        im.save(os.path.join(HUD_OUT, name + '.png'))
+        print('wrote', name, im.size)
+    bg, pr = xp_bars()
+    bg.save(os.path.join(SPRITES, 'experience_bar_background.png'))
+    pr.save(os.path.join(SPRITES, 'experience_bar_progress.png'))
+    print('wrote xp bars', bg.size)
     os.makedirs(OUT, exist_ok=True)
     for name, fn in (('panel_54', panel_54), ('codex', codex)):
         im = fn()
