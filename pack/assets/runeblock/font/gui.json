@@ -1,0 +1,14 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "": -1,
+        "": -8,
+        "": -169
+      }
+    },
+    { "type": "bitmap", "file": "runeblock:gui/panel_54.png", "ascent": 13, "height": 222, "chars": [""] },
+    { "type": "bitmap", "file": "runeblock:gui/codex.png", "ascent": 13, "height": 222, "chars": [""] }
+  ]
+}
