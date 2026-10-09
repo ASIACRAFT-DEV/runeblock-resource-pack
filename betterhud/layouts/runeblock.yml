@@ -1,0 +1,39 @@
+# Positions are pixels from the HUD anchor (bottom centre, see huds/runeblock.yml). Each bar is 90x9, fill 86x5 at (2,2)
+rb_hp:
+  images:
+    1:
+      name: rb_hp_frame
+      x: 0
+      y: 0
+    2:
+      name: rb_hp_fill
+      x: 2
+      y: 2
+  texts:
+    1:
+      name: rb_font
+      pattern: "[health] / [max_health]"
+      placeholder-string-format:
+        number: "#,##0"
+      color: "#F06A5A"
+      align: left
+      x: 1
+      y: -9
+rb_mana:
+  images:
+    1:
+      name: rb_mana_frame
+      x: 0
+      y: 0
+    2:
+      name: rb_mana_fill
+      x: 2
+      y: 2
+  texts:
+    1:
+      name: rb_font
+      pattern: "[papi:arcane_mana] / [papi:arcane_mana_max]"
+      color: "#8FC4FF"
+      align: right
+      x: 89
+      y: -9

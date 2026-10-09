@@ -1,0 +1,25 @@
+# RuneBlock bottom HUD: HP (red, fills from the left) + mana (blue, fills from the right). Pictures: tools/gen_hud.py
+rb_hp_frame:
+  type: single
+  file: rb_hp_frame.png
+rb_mana_frame:
+  type: single
+  file: rb_mana_frame.png
+rb_hp_fill:
+  type: listener
+  file: rb_hp_fill.png
+  split: 43
+  split-type: left
+  setting:
+    listener:
+      class: health
+rb_mana_fill:
+  type: listener
+  file: rb_mana_fill.png
+  split: 43
+  split-type: right
+  setting:
+    listener:
+      class: placeholder
+      value: "(number)papi:arcane_mana"
+      max: "(number)papi:arcane_mana_max"

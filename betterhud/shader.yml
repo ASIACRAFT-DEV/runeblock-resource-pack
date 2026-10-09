@@ -1,0 +1,4 @@
+# BetterHud hides its own carrier boss bar by blanking this colour. NOT yellow: ArcaneSouls uses yellow for the
+# boss cast bar, the main quest tracker line and escort HP. Pink is unused by ArcaneSouls and every MythicMobs boss.
+bar-color: pink
+disable-level-text: false

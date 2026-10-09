@@ -1,0 +1,5 @@
+# Minecraft's default font (bitmap), unifont for anything it lacks
+rb_font:
+  merge-default-bitmap: true
+  use-unifont: true
+  include: []
