@@ -76,8 +76,8 @@ def selection():
 
 # ───────────────────────────── bars ─────────────────────────────
 
-BAR_W, BAR_H = 90, 9
-FILL_W, FILL_H = 86, 5      # placed at (2, 2) inside the frame
+BAR_W, BAR_H = 81, 9       # vanilla hearts / food row width: leaves the centre gap for the XP level number
+FILL_W, FILL_H = 77, 5      # placed at (2, 2) inside the frame
 
 
 def frame(mirror):
