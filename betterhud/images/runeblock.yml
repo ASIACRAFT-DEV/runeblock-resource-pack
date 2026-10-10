@@ -8,7 +8,7 @@ rb_mana_frame:
 rb_hp_fill:
   type: listener
   file: rb_hp_fill.png
-  split: 77
+  split: 76
   split-type: left
   setting:
     listener:
@@ -16,7 +16,7 @@ rb_hp_fill:
 rb_mana_fill:
   type: listener
   file: rb_mana_fill.png
-  split: 77
+  split: 76
   split-type: right
   setting:
     listener:

@@ -1,6 +1,7 @@
 # Bottom centre (gui 50%/100%). The hotbar is 182 wide (x -91..+91); the bars sit in the row the hearts and
 # drumsticks used (39 px above the bottom) and keep their centre gap (-10..+10) for the XP level number; the vanilla
-# XP bar stays under them
+# XP bar stays under them. BetterHud draws each layout shifted left by half its width (measured in game, 2026-10-10:
+# 90 px bars sat 45-47 px left), so pixel x = wanted left edge + 40 for the 80 px bars: HP -90..-10, mana +10..+90
 runeblock_hud:
   layouts:
     1:
@@ -9,7 +10,7 @@ runeblock_hud:
         x: 50
         y: 100
       pixel:
-        x: -91
+        x: -50
         y: -39
     2:
       name: rb_mana
@@ -17,5 +18,5 @@ runeblock_hud:
         x: 50
         y: 100
       pixel:
-        x: 10
+        x: 50
         y: -39
