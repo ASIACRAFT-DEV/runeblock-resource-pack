@@ -17,11 +17,12 @@ Releases are immutable: never replace a released zip in place. Players' clients 
 For now the two story bosses use vanilla mob bodies (wither, warden), so they need nothing from this pack.
 Blockbench models for them go here later (they are built by the server's model plugin into its own zip, then merged in).
 
-## Bottom HUD (BetterHud, v0.3.0)
+## Bottom HUD (BetterHud, v0.3.2)
 HP (red) and mana (blue) bars over a reskinned hotbar, drawn by the **BetterHud** plugin (1.14.1 on the box; 2.x needs Java 25).
 The vanilla hearts, drumsticks and armour are blanked here; crosshair, XP bar, air and mount hearts stay.
 - `tools/gen_hud.py` draws the pictures: hotbar sprites into `pack/`, bar pictures into `betterhud/assets/`
 - `betterhud/` mirrors the box's `plugins/BetterHud/` (images, layouts, huds, texts, shader.yml). Upload it, run
   `hud reload` in the **panel console** (RCON can't run it), fetch `plugins/BetterHud/build.zip`, then
   `tools/merge-betterhud.sh build.zip`. The merged files must match the box's config exactly, so always re-merge after a change
+- BetterHud gotchas (1.14.1, seen in game): text glyphs are built at 16 px, so layout text `scale: 0.5` = vanilla size; `/` in a `pattern` escapes the next char (write `//`); each layout draws shifted left by ~half its width, so `huds/` pixel x = wanted left edge + half the bar width
 - `shader.yml` `bar-color: pink`: BetterHud blanks that boss bar colour for its own carrier bar. Never yellow (ArcaneSouls cast bar, tracker, escort HP)
