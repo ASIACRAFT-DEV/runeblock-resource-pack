@@ -13,7 +13,7 @@ Resource pack for the RuneBlock MMO server (Minecraft **1.21.11**, resource pack
 
 Releases are immutable: never replace a released zip in place. Players' clients cache by SHA-1, so ship a new tag instead.
 
-## Gear models (v0.4.0, not released yet)
+## Gear models (v0.4.0)
 3D weapon models for ArcaneSouls gear (0.18.0+: a `model: "runeblock:<name>"` key on a `gear.yml` item sets the item's `item_model`).
 - `pack/assets/runeblock/items/<name>.json` = the item definition the server names; it points at `models/item/gear/<name>.json`,
   whose textures are in `textures/item/gear/<line>/`. Bows and crossbows use the same pull / charge states as the vanilla definitions.
