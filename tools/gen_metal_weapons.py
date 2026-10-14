@@ -10,6 +10,7 @@ recoloured from the vanilla sprites in the jar (read, never copied unchanged).
 import colorsys, io, json, os, sys, zipfile
 from PIL import Image
 import weapon_art   # the weapon sprites (32 px, drawn from parts, three looks per category by tier)
+import held_models  # 3D models while held: gauntlet around the forearm, grimoire open with flipping pages
 
 jar, pack = zipfile.ZipFile(sys.argv[1]), sys.argv[2]
 rb = os.path.join(pack, 'runeblock')
@@ -61,6 +62,7 @@ for metal in METALS:
     for cat, (_, hold) in weapon_art.CATEGORIES.items():
         if cat in ('sword', 'axe') and metal not in NEW_METALS: continue
         emit(f'{metal}_{cat}', weapon_art.sprite(cat, metal), hold); n += 1
+print(held_models.write(rb), 'held models')
 for metal in NEW_METALS:
     # the metal itself: a crafting material (ArcaneSouls gear.yml `ingots:`), flat like a vanilla ingot
     ing = f'{metal}_ingot'

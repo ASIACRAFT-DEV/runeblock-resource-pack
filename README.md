@@ -30,6 +30,10 @@ All written by `tools/gen_metal_weapons.py <1.21.11 client jar> pack/assets` (fo
 - 146 flat 32 px weapon sprites of our own: 14 weapon types in 10 metals (`runeblock:<metal>_<type>`), plus a sword and an axe
   in Mithril, Bloodiron and Voidsteel. Drawn by `tools/weapon_art.py` from shaded parts (one function per weapon type), with three
   looks by gear tier: Novice plain, Artisan trimmed, Mythic with gems and a glowing edge in the metal's accent colour.
+- Held models (v0.4.3, `tools/held_models.py`): the item definitions of `<metal>_gauntlet` and `<metal>_grimoire` switch on
+  `minecraft:display_context`: the flat sprite in the GUI, on the ground and in item frames; in a hand a 3D model. Gauntlet = a plated
+  glove around the fist and forearm (ArcaneSouls 0.20.0 puts a twin in the off-hand, so both arms); grimoire = an open book whose
+  `<metal>_grimoire_pages.png` is animated (8 frames page turn + 16 frames rune pulse, frametime 2). Display transforms are first guesses.
 - 3 ingots and 3 ores (recoloured vanilla ingot / diamond, iron and emerald ore textures).
 - `assets/minecraft/blockstates/note_block.json`: the ore BLOCKS in the world are note block states
   (`instrument=custom_head`, note 1 = Mithril, 2 = Bloodiron, 3 = Voidsteel); every other note block state keeps the vanilla model.
