@@ -35,8 +35,14 @@ def scaled(k, tp, fp):   # the vanilla item/handheld display values with a large
         'thirdperson_lefthand':  {'rotation': [0, 90, -55], 'translation': [0, tp, 0.5], 'scale': [k, k, 0.85]},
         'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, fp, 1.13], 'scale': [k * 0.8, k * 0.8, 0.68]},
         'firstperson_lefthand':  {'rotation': [0, 90, -25], 'translation': [1.13, fp, 1.13], 'scale': [k * 0.8, k * 0.8, 0.68]}}}
+def small():   # the vanilla handheld values at about 3/4 size: daggers (held in both hands)
+    return {'display': {
+        'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, 3, 0.5], 'scale': [0.65, 0.65, 0.65]},
+        'thirdperson_lefthand':  {'rotation': [0, 90, -55], 'translation': [0, 3, 0.5], 'scale': [0.65, 0.65, 0.65]},
+        'firstperson_righthand': {'rotation': [0, -90, 25], 'translation': [1.13, 2.4, 1.13], 'scale': [0.5, 0.5, 0.5]},
+        'firstperson_lefthand':  {'rotation': [0, 90, -25], 'translation': [1.13, 2.4, 1.13], 'scale': [0.5, 0.5, 0.5]}}}
 HOLD = {'handheld': ('minecraft:item/handheld', None), 'flat': ('minecraft:item/generated', None),
-        'big': ('minecraft:item/handheld', scaled(1.3, 7.5, 5.0))}
+        'big': ('minecraft:item/handheld', scaled(1.3, 7.5, 5.0)), 'small': ('minecraft:item/handheld', small())}
 
 def recolour(metal, sprite):   # the grey (iron) pixels of a vanilla sprite, mapped by brightness onto the metal's ramp
     stops = [rgb(h) for h in METALS[metal]]

@@ -56,28 +56,28 @@ def gauntlet_model(metal):
     the arm's axis is about x = 8, y = 6 (a 4x4 arm). The glove is 7 wide so it covers either arm."""
     t = W.TIER[metal]
     els = [
-        _box([4.5, 2.5, 11], [11.5, 9.5, 16.5], PLATE),                    # forearm cuff
-        _box([4, 2, 15.5], [12, 10, 17], TRIM if t else UNDER),            # cuff rim
+        _box([5, 3, 11], [11, 9, 16.5], PLATE),                            # forearm cuff (6 x 6 round a 4 x 4 arm)
+        _box([4.6, 2.6, 15.6], [11.4, 9.4, 17], TRIM if t else UNDER),     # cuff rim
         _box([4.8, 2.8, 10], [11.2, 9.2, 11.2], TRIM if t else UNDER),     # wrist band
-        _box([5, 3, 6.4], [11, 9, 10.2], PLATE),                           # back of the hand
-        _box([5.4, 3.4, 5.8], [10.6, 8.6, 6.6], UNDER),                    # curled fingers
+        _box([5.2, 3.2, 6.6], [10.8, 8.8, 10.2], PLATE),                   # back of the hand
+        _box([5.6, 3.6, 6], [10.4, 8.4, 6.8], UNDER),                      # curled fingers
     ]
-    for x0 in (5.4, 6.8, 8.2, 9.6):                                        # knuckle plates
-        els.append(_box([x0, 8.6, 6.2], [x0 + 1.1, 9.6, 8], TRIM if t else PLATE))
+    for x0 in (5.6, 6.9, 8.2, 9.5):                                        # knuckle plates
+        els.append(_box([x0, 8.6, 6.4], [x0 + 1, 9.4, 8], TRIM if t else PLATE))
     if t:
-        els.append(_box([11, 5, 7.2], [11.6, 7, 9.2], GEM))                # a gem on each side of the hand
-        els.append(_box([4.4, 5, 7.2], [5, 7, 9.2], GEM))
+        els.append(_box([10.7, 5, 7.4], [11.2, 7, 9.2], GEM))              # a gem on each side of the hand
+        els.append(_box([4.8, 5, 7.4], [5.3, 7, 9.2], GEM))
     if t == 2:
-        for y0 in (3.5, 7.5):                                              # cuff fins
-            els.append(_box([11.5, y0, 12], [13, y0 + 1, 15.5], TRIM))
-            els.append(_box([3, y0, 12], [4.5, y0 + 1, 15.5], TRIM))
-        els.append(_box([4.4, 2.4, 13.2], [11.6, 9.6, 13.8], GEM))          # glowing band around the cuff
-    disp = {
-        'thirdperson_righthand': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
-        'thirdperson_lefthand':  {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [1, 1, 1]},
-        # first person: the forearm comes from behind the camera, the fist in front of it
-        'firstperson_righthand': {'rotation': [10, 180, 0], 'translation': [6, -2, -4], 'scale': [0.9, 0.9, 0.9]},
-        'firstperson_lefthand':  {'rotation': [10, 180, 0], 'translation': [6, -2, -4], 'scale': [0.9, 0.9, 0.9]},
+        for y0 in (3.6, 7.4):                                              # cuff fins
+            els.append(_box([11, y0, 12], [12.2, y0 + 1, 15.5], TRIM))
+            els.append(_box([3.8, y0, 12], [5, y0 + 1, 15.5], TRIM))
+        els.append(_box([4.8, 2.8, 13.2], [11.2, 9.2, 13.8], GEM))          # glowing band around the cuff
+    disp = {   # tuned in a client 2026-10-14: one model unit in the hand is about 1.45 arm pixels
+        'thirdperson_righthand': {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [0.62, 0.62, 0.62]},
+        'thirdperson_lefthand':  {'rotation': [0, 0, 0], 'translation': [0, 0, 0], 'scale': [0.62, 0.62, 0.62]},
+        # first person: seen from behind the forearm, the fist out in front
+        'firstperson_righthand': {'rotation': [10, 180, 0], 'translation': [4, 0.5, -3], 'scale': [0.5, 0.5, 0.5]},
+        'firstperson_lefthand':  {'rotation': [10, 180, 0], 'translation': [4, 0.5, -3], 'scale': [0.5, 0.5, 0.5]},
     }
     return {'textures': {'t': f'runeblock:item/gear/metal/{metal}_gauntlet_3d', 'particle': f'runeblock:item/gear/metal/{metal}_gauntlet'},
             'elements': els, 'display': disp}
@@ -178,8 +178,8 @@ def grimoire_model(metal):
         'thirdperson_righthand': {'rotation': [90, 0, 0], 'translation': [0, 3, 1], 'scale': [0.7, 0.7, 0.7]},
         'thirdperson_lefthand':  {'rotation': [90, 0, 0], 'translation': [0, 3, 1], 'scale': [0.7, 0.7, 0.7]},
         # first person: pages tilted toward the camera, spine running up the screen
-        'firstperson_righthand': {'rotation': [-55, 0, 0], 'translation': [-1, 3, -2], 'scale': [0.75, 0.75, 0.75]},
-        'firstperson_lefthand':  {'rotation': [-55, 0, 0], 'translation': [-1, 3, -2], 'scale': [0.75, 0.75, 0.75]},
+        'firstperson_righthand': {'rotation': [55, 0, 0], 'translation': [-4, 4.5, -3], 'scale': [0.5, 0.5, 0.5]},
+        'firstperson_lefthand':  {'rotation': [55, 0, 0], 'translation': [-4, 4.5, -3], 'scale': [0.5, 0.5, 0.5]},
     }
     return {'textures': tex, 'elements': els, 'display': disp}
 

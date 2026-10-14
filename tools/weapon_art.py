@@ -446,7 +446,7 @@ def harp(a):
         for y in range(9, 26, 4): a.setpx(7, y, 'gem', 3)
 
 CATEGORIES = {   # category -> (draw, how it is held)
-    'hammer': (hammer, 'big'), 'katana': (katana, 'big'), 'gauntlet': (gauntlet, 'flat'), 'dagger': (dagger, 'handheld'),
+    'hammer': (hammer, 'big'), 'katana': (katana, 'big'), 'gauntlet': (gauntlet, 'flat'), 'dagger': (dagger, 'small'),
     'rapier': (rapier, 'big'), 'harp': (harp, 'flat'), 'sceptre': (sceptre, 'handheld'), 'sickle': (sickle, 'handheld'),
     'halberd': (halberd, 'big'), 'staff': (staff, 'big'), 'scythe': (scythe, 'big'), 'grimoire': (grimoire, 'flat'),
     'greatsword': (greatsword, 'big'), 'spear': (spear, 'big'), 'sword': (sword, 'handheld'), 'axe': (axe, 'handheld'),
