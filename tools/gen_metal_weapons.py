@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Builds the flat (2D, 16 px) metal weapons: every weapon category in every metal.
+"""Builds the flat (2D, 32 px) metal weapons: every weapon category in every metal, plus ingots and ores.
 
 Usage: gen_metal_weapons.py <minecraft client jar (1.21.11)> pack/assets
 Writes pack/assets/runeblock/{items,models/item/gear,textures/item/gear/metal} as `<metal>_<category>`.
-The category sprites are our own, drawn below as 16x16 grids and coloured with each metal's 5-step ramp.
-The three metals vanilla does not have also get a sword and an axe, recoloured from the vanilla iron sprites
-in the jar (read, never copied unchanged).
-
-Grid characters: . empty · o d m l h = metal ramp, darkest to highlight · W w v u = wood, dark to light
-                 k black · s string · p P paper · L leather · r red wrap
+The weapon sprites are our own, drawn by weapon_art.py: plain at Novice, trimmed at Artisan, gems and a glowing
+edge at Mythic. The three metals vanilla does not have also get a sword and an axe. Their ingots and ores are
+recoloured from the vanilla sprites in the jar (read, never copied unchanged).
 """
 import colorsys, io, json, os, sys, zipfile
 from PIL import Image
+import weapon_art   # the weapon sprites (32 px, drawn from parts, three looks per category by tier)
 
 jar, pack = zipfile.ZipFile(sys.argv[1]), sys.argv[2]
 rb = os.path.join(pack, 'runeblock')
@@ -28,251 +26,8 @@ METALS = {  # in progression order; ramp = darkest .. highlight
     'voidsteel': ['#120a22', '#2e1a52', '#5a34a0', '#9a6ef0', '#e6d4ff'],
 }
 NEW_METALS = ['mithril', 'bloodiron', 'voidsteel']
-FIXED = {'W': '#281e0b', 'w': '#493615', 'v': '#684e1e', 'u': '#896727', 'k': '#181818', 's': '#b8b8b8',
-         'p': '#e8dcb8', 'P': '#b9a77a', 'L': '#6b3a1e', 'r': '#a3312a'}
 def rgb(h): return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
 
-# category -> (how it is held, grid)
-SPRITES = {
-'katana': ('handheld', '''
-..............oo
-.............olo
-............olmo
-...........olmo
-..........olmo
-.........olmo
-........olmo
-.......olmo
-......olmo
-....kolmo
-....kkmo
-...krkk
-..krk
-.krk
-krk
-kk
-'''),
-'dagger': ('handheld', '''
-
-
-............oo
-...........olo
-..........olmo
-.........olmo
-........olmo
-.....oo.omo
-.....odoo
-......odo
-.....WvWoo
-....WvW..o
-...WvW
-...WW
-'''),
-'rapier': ('handheld', '''
-...............o
-..............ol
-.............olo
-............olo
-...........olo
-..........olo
-.........olo
-........olo
-....oo.olo
-...olmoho
-...ommmo
-....omWoo
-...oWvWmo
-..WvW.oo
-.WvW
-.WW
-'''),
-'greatsword': ('big', '''
-............ooo
-...........olho
-..........olhmo
-.........olhmo
-........olhmo
-.......olhmo
-......olhmo
-.....olhmo
-.o..olhmo
-odoolmmo
-.odommo
-..odoo
-.WvWodo
-WvW..odo
-vW....oo
-'''),
-'spear': ('big', '''
-.............ooo
-............olho
-...........olhmo
-...........omlo
-..........Wooo
-.........WvW
-........WvW
-.......WvW
-......WvW
-.....WvW
-....WvW
-...WvW
-..WvW
-.WvW
-WvW
-WW
-'''),
-'halberd': ('big', '''
-..............oo
-.............olo
-........oo..olo
-.......olho.Wvo
-.......olhmWvW
-.......ommWvW
-........oWvW
-........WvW
-.......WvW
-......WvW
-.....WvW
-....WvW
-...WvW
-..WvW
-.WvW
-WW
-'''),
-'hammer': ('handheld', '''
-..oooooooooooo
-.olhhhhhhhhhhmo
-.olmmmmmmmmmmdo
-.ommmmmmmmmmddo
-.oddddddddddddo
-..ooooovWooooo
-.......vW
-.......vW
-.......vW
-.......vW
-.......vW
-.......vW
-.......vW
-.......WW
-'''),
-'gauntlet': ('flat', '''
-
-
-....oooooooo
-...olhlolhloo
-...ommommommdo
-...ommmmmmmmdo
-...olhmmmmmmdo
-...ommmmmmmddo
-....ommmmmmdo
-....oooooooo
-....oLLLLLLo
-....odmmmmdo
-....olhmmmdo
-....ommmmddo
-....oooooooo
-'''),
-'staff': ('big', '''
-............ooo
-...........ohhlo
-...........ohlmo
-..........oolmdo
-.........WvWooo
-........WvW
-.......WvW
-......WvW
-.....WvW
-....WvW
-...WvW
-..WvW
-.WvW
-WvW
-WW
-'''),
-'sceptre': ('handheld', '''
-
-
-...........oo
-..........ohho
-.........oohlo
-........olmoo
-........omlo
-.......odmo
-......odmo
-.....odmo
-....odmo
-...odmo
-...ooo
-'''),
-'grimoire': ('flat', '''
-
-
-...oooooooooo
-..olmmmmmmmmdo
-..olmmmhhmmmdo
-..olmmhllhmmdo
-..olmmhllhmmdo
-..olmmmhhmmmdo
-..olmmmmmmmmdo
-..olmmmmmmmmdo
-..olmmmmmmmmdo
-..oddddddddddo
-..oppppppppPPo
-..oooooooooooo
-'''),
-'harp': ('flat', '''
-
-.....oooooo
-....olhhhhmo
-...olmooooomo
-...omos.s.somo
-...omos.s.s.omo
-...omos.s.s.omo
-...omos.s.s.omo
-...omos.s.somo
-...omos.s.omo
-...omos.somo
-...omosomo
-...ommmmo
-...olmmo
-...oooo
-'''),
-'scythe': ('big', '''
-.....ooooooo
-...oolhhhhlmoo
-..olmmoooommlWo
-.olmoo....ooWvW
-.omo.......WvWo
-.oo.......WvW
-.........WvW
-........WvW
-.......WvW
-......WvW
-.....WvW
-....WvW
-...WvW
-..WvW
-.WvW
-.WW
-'''),
-'sickle': ('handheld', '''
-
-......ooooo
-....oolhhhmoo
-...olmmooommmo
-...omoo...oomlo
-...oo.......omo
-............omo
-...........omlo
-..........oWmo
-.........WvWo
-........WvW
-.......WvW
-......WvW
-.....WvW
-.....WW
-'''),
-}
 def scaled(k, tp, fp):   # the vanilla item/handheld display values with a larger scale: long weapons from a 16 px sprite
     return {'display': {
         'thirdperson_righthand': {'rotation': [0, -90, 55], 'translation': [0, tp, 0.5], 'scale': [k, k, 0.85]},
@@ -282,14 +37,6 @@ def scaled(k, tp, fp):   # the vanilla item/handheld display values with a large
 HOLD = {'handheld': ('minecraft:item/handheld', None), 'flat': ('minecraft:item/generated', None),
         'big': ('minecraft:item/handheld', scaled(1.3, 7.5, 5.0))}
 
-def draw(metal, grid):
-    rows = grid.strip('\n').split('\n'); ramp = dict(zip('odmlh', (rgb(h) for h in METALS[metal])))
-    assert len(rows) <= 16 and all(len(r) <= 16 for r in rows), grid
-    im = Image.new('RGBA', (16, 16), (0, 0, 0, 0))
-    for y, row in enumerate(rows):
-        for x, ch in enumerate(row):
-            if ch != '.': im.putpixel((x, y), (ramp[ch] if ch in ramp else rgb(FIXED[ch])) + (255,))
-    return im
 def recolour(metal, sprite):   # the grey (iron) pixels of a vanilla sprite, mapped by brightness onto the metal's ramp
     stops = [rgb(h) for h in METALS[metal]]
     im = Image.open(io.BytesIO(jar.read(f'assets/minecraft/textures/item/{sprite}.png'))).convert('RGBA'); out = []
@@ -311,10 +58,10 @@ def emit(name, im, hold):
 
 n = 0
 for metal in METALS:
-    for cat, (hold, grid) in SPRITES.items():
-        emit(f'{metal}_{cat}', draw(metal, grid), hold); n += 1
+    for cat, (_, hold) in weapon_art.CATEGORIES.items():
+        if cat in ('sword', 'axe') and metal not in NEW_METALS: continue
+        emit(f'{metal}_{cat}', weapon_art.sprite(cat, metal), hold); n += 1
 for metal in NEW_METALS:
-    emit(f'{metal}_sword', recolour(metal, 'iron_sword'), 'handheld'); emit(f'{metal}_axe', recolour(metal, 'iron_axe'), 'handheld'); n += 2
     # the metal itself: a crafting material (ArcaneSouls gear.yml `ingots:`), flat like a vanilla ingot
     ing = f'{metal}_ingot'
     recolour(metal, 'iron_ingot').save(os.path.join(rb, 'textures/item/gear/metal', ing + '.png'), optimize=True)
