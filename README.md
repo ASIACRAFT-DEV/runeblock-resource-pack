@@ -25,10 +25,11 @@ Releases are immutable: never replace a released zip in place. Players' clients 
   (textures named `n_*`). `harp` is the bow model without pull states. Third-party art: check the licence covers this server before a release.
 - A new weapon = one model + its textures + one `items/<name>.json`, then one row in `gear.yml`. Never seen in a client yet.
 
-## Metal weapons, ingots and ores (v0.4.1)
+## Metal weapons, ingots and ores (v0.4.1, weapons redrawn in v0.4.2)
 All written by `tools/gen_metal_weapons.py <1.21.11 client jar> pack/assets` (for ArcaneSouls 0.19.0):
-- 146 flat 16 px weapon sprites of our own: 14 weapon types in 10 metals (`runeblock:<metal>_<type>`), drawn as grids in the script,
-  plus a sword and an axe in Mithril, Bloodiron and Voidsteel (recoloured from the vanilla iron sprites).
+- 146 flat 32 px weapon sprites of our own: 14 weapon types in 10 metals (`runeblock:<metal>_<type>`), plus a sword and an axe
+  in Mithril, Bloodiron and Voidsteel. Drawn by `tools/weapon_art.py` from shaded parts (one function per weapon type), with three
+  looks by gear tier: Novice plain, Artisan trimmed, Mythic with gems and a glowing edge in the metal's accent colour.
 - 3 ingots and 3 ores (recoloured vanilla ingot / diamond, iron and emerald ore textures).
 - `assets/minecraft/blockstates/note_block.json`: the ore BLOCKS in the world are note block states
   (`instrument=custom_head`, note 1 = Mithril, 2 = Bloodiron, 3 = Voidsteel); every other note block state keeps the vanilla model.
