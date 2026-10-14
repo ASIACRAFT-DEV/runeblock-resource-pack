@@ -25,7 +25,7 @@ Releases are immutable: never replace a released zip in place. Players' clients 
   (textures named `n_*`). `harp` is the bow model without pull states. Third-party art: check the licence covers this server before a release.
 - A new weapon = one model + its textures + one `items/<name>.json`, then one row in `gear.yml`. Never seen in a client yet.
 
-## Metal weapons, ingots and ores (v0.4.1, not released yet)
+## Metal weapons, ingots and ores (v0.4.1)
 All written by `tools/gen_metal_weapons.py <1.21.11 client jar> pack/assets` (for ArcaneSouls 0.19.0):
 - 146 flat 16 px weapon sprites of our own: 14 weapon types in 10 metals (`runeblock:<metal>_<type>`), drawn as grids in the script,
   plus a sword and an axe in Mithril, Bloodiron and Voidsteel (recoloured from the vanilla iron sprites).
