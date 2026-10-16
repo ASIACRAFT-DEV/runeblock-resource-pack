@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "runeblock:reforged_iron"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "runeblock:reforged_iron"
+      }
+    ]
+  }
+}
