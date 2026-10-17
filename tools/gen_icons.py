@@ -554,6 +554,23 @@ def m_orb(p, C, cx=128, cy=128, r=72):
     p.circ(cx - r * 0.35, cy - r * 0.35, r * 0.22, fill=WHITE)
 
 
+def m_hound(p, C, cx=128, cy=132, s=1.0, col=None, eye=None):
+    """A wolf head in profile-free front view: ears, long muzzle, glowing eyes."""
+    col = col or C['hi']
+    k = lambda x, y: (cx + x * s, cy + y * s)
+    p.poly([k(-62, -40), k(-50, -104), k(-18, -58)], col)                 # ears
+    p.poly([k(62, -40), k(50, -104), k(18, -58)], col)
+    p.poly([k(-50, -88), k(-38, -66), k(-26, -74)], C['lo'])
+    p.poly([k(50, -88), k(38, -66), k(26, -74)], C['lo'])
+    p.poly([k(-74, -40), k(-50, -66), k(50, -66), k(74, -40), k(64, 6), k(30, 40), k(0, 84), k(-30, 40), k(-64, 6)], col)   # head
+    p.poly([k(-28, 20), k(28, 20), k(16, 66), k(0, 84), k(-16, 66)], C['mid'])                                      # muzzle
+    p.ell(*k(-14, 62), *k(14, 82), fill=C['lo'])                                                                     # nose
+    for sx in (-1, 1):
+        p.poly([k(sx * 52, -22), k(sx * 20, -14), k(sx * 46, -4)], eye or C['ac'])                                  # eyes
+    p.poly([k(-64, 6), k(-86, 30), k(-52, 26)], col)                                                                 # cheek fur
+    p.poly([k(64, 6), k(86, 30), k(52, 26)], col)
+
+
 def m_drake(p, C):
     p.poly([(40, 150), (120, 70), (190, 60), (232, 96), (200, 110), (226, 140), (176, 132), (128, 176), (92, 210)], C['mid'])
     p.poly([(120, 70), (150, 26), (160, 66)], C['hi'])
@@ -716,10 +733,11 @@ SKILLS = {
     'glacial_domain': [('snow', {})],
     'extinction_cataclysm': [('meteor', {'cx': 168, 'cy': 168}), ('bolt', {'s': 0.5, 'cx': 70, 'cy': 90}), ('snow_small', {})],
     # Summoner
-    'summon_familiar': [('ghost', {})],
-    'call_undead': [('skull', {})],
-    'summon_golem_titan': [('golem', {})],
-    'legion_of_the_damned': [('skull', {'s': 0.55, 'cx': 70, 'cy': 150}), ('skull', {'s': 0.55, 'cx': 186, 'cy': 150}), ('skull', {'s': 0.7, 'cx': 128, 'cy': 100})],
+    # 0.24.0 hound pack
+    'summon_familiar': [('hound', {'s': 0.62, 'cx': 74, 'cy': 150}), ('hound', {'s': 0.62, 'cx': 182, 'cy': 150}), ('hound', {'s': 0.78, 'cy': 112})],
+    'call_undead': [('hound', {'s': 0.9, 'cy': 150}), ('ring_waves', {'r0': 112})],
+    'summon_golem_titan': [('hound', {'s': 1.0, 'cy': 150}), ('crown', {'s': 0.42, 'cy': 40})],
+    'legion_of_the_damned': [('rune', {'sides': 8}), ('hound', {'s': 0.5, 'cx': 70, 'cy': 160}), ('hound', {'s': 0.5, 'cx': 186, 'cy': 160}), ('hound', {'s': 0.8, 'cy': 118})],
     'abyssal_drake_awakening': [('drake', {})],
     'army_of_the_dead_sovereign': [('crown', {'s': 0.55, 'cy': 50}), ('skull', {'s': 0.8, 'cy': 150})],
     'mythic_behemoth': [('behemoth', {})],
