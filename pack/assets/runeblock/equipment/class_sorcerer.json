@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "runeblock:class_sorcerer"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "runeblock:class_sorcerer"
+      }
+    ]
+  }
+}

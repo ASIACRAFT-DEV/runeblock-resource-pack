@@ -1,3 +1,5 @@
 RuneBlock-*.zip
 sha1.txt
 .DS_Store
+blockbench/
+tools/__pycache__/

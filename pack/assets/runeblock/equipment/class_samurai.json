@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "runeblock:class_samurai"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "runeblock:class_samurai"
+      }
+    ]
+  }
+}
