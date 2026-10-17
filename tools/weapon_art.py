@@ -445,11 +445,138 @@ def harp(a):
         a.poly([(26, 3), (30, 0), (28, 6)], 'gold')
         for y in range(9, 26, 4): a.setpx(7, y, 'gem', 3)
 
+# ---- ArcaneSouls 0.27.0 swords (kuwusaki 2026-10-17: more weapons, our own drawings, each with its own stats) -----------------------
+
+def longsword(a):    # hand-and-a-half: long grip, long straight guard, wheel pommel
+    t = a.tier
+    a.grip(-27, -11, 1, mat='leather' if t else 'wood', wrap='gold' if t == 2 else 'cloth' if t else None, period=4)
+    a.blade(-8, 29, 2.6, 7, w0=3.4)
+    a.band(-8, 20, -0.5, 0.5, 'metal', [1])                       # fuller
+    if t == 2: glow_edge(a, -5, 27, 2.6, 7)
+    a.guard(-9, 1, -10, 10, 'gold' if t else 'metal', tips=t > 0)
+    cx, cy = at(-28, 0)
+    a.disc(cx, cy, 2.2, 'gold' if t else 'metal', ring=1.0 if t else None)
+    if t == 2: a.gem(cx, cy, 1.0)
+
+def flamberge(a):    # two-hander with a wavy blade, a blunt ricasso and parrying lugs
+    t = a.tier
+    wave = lambda s: 0 if s < -1 else 1.3 * math.sin((s + 1) * math.pi / 5)
+    a.blade(-1, 29, 3.0, 7, curve=wave)
+    a.band(-7, -1, -1.6, 1.6, 'metal', 'bevel')                     # ricasso
+    for tt in (-1, 1): a.poly_st([(-2, 2.6 * tt), (1, 4.6 * tt), (0, 2 * tt)], 'gold' if t else 'metal')   # lugs
+    if t == 2: glow_edge(a, 1, 27, 3.0, 7, curve=wave)
+    a.guard(-8, 1.2, -11, 11, 'gold' if t else 'metal', tips=t > 0)
+    if t == 2: a.gem(*at(-8, 0), 1.5)
+    a.grip(-27, -10, 1.2, mat='leather' if t else 'wood', wrap='cloth' if t else None, period=5)
+    a.disc(*at(-28, 0), 1.8, 'gold' if t else 'metal')
+
+def sabre(a):        # light curved blade, D-shaped knuckle bow on the shadow side
+    t = a.tier
+    curve = lambda s: max(0, s + 6) ** 2 / 420.0
+    a.blade(-6, 29, 2.2, 6, curve=curve)
+    if t: a.band(-6, 22, -2.2, -1.7, 'metal', [4], curve=curve)
+    if t == 2: glow_edge(a, -4, 27, 2.2, 6, curve=curve)
+    g = 'gold' if t else 'metal'
+    a.band(-9, -7, -4, 5, g, 'bevel')                               # cross guard
+    a.band(-24, -8, 4.0, 5.2, g, 'bevel')                           # knuckle bow
+    a.band(-25, -23, -1, 5.2, g, 'bevel')                           # bow meets the pommel
+    a.grip(-22, -10, 1, mat='leather' if t else 'wood', wrap='gold' if t == 2 else None, period=3)
+    if t == 2: a.gem(*at(-8, 0), 1.3)
+
+def scimitar(a):     # strong curve, the blade widens toward the tip
+    t = a.tier
+    curve = lambda s: max(0, s + 4) ** 2 / 170.0
+    a.blade(-4, 25, 3.6, 6, curve=curve, w0=1.8)
+    if t: a.band(-4, 18, -1.8, -1.2, 'metal', [4], curve=curve)
+    if t == 2: glow_edge(a, -2, 23, 3.6, 6, curve=curve)
+    g = 'gold' if t else 'metal'
+    a.guard(-6, 1, -6, 6, g)
+    for tt in (-1, 1): a.poly_st([(-7, 6 * tt), (-11, 8 * tt), (-7, 4.5 * tt)], g)   # down-swept quillons
+    if t == 2: a.gem(*at(-6, 0), 1.3)
+    a.grip(-21, -8, 1, mat='cloth' if t else 'wood', wrap='gold' if t else None, period=3)
+    a.poly_st([(-21, 0), (-24, -2.5), (-27, 1.5), (-23, 3)], g)                      # hooked pommel
+
+def falchion(a):     # single-edged, straight back, the edge swells toward a clipped point
+    t = a.tier
+    a.poly_st([(-7, -2.2), (24, -2.2), (29, 0), (26, 3.6), (18, 5.4), (6, 4.2), (-7, 2.4)], 'metal')
+    edge = [p for p in a.px if a.px[p][0] == 'metal' and T(*p) >= 1 and
+            T(*p) >= (2.4 + (S(*p) + 7) * 0.12 if S(*p) < 18 else 4.0) - 1.6]
+    for p in edge: a.px[p] = ('gem', 3) if t == 2 else ('metal', 4)
+    a.band(-7, 20, -2.2, -1.6, 'metal', [1])                         # thick spine
+    g = 'gold' if t else 'metal'
+    a.guard(-8, 1, -6, 6, g, tips=t > 0)
+    if t == 2: a.gem(*at(-8, 0), 1.3)
+    a.grip(-23, -10, 1, mat='leather' if t else 'wood', wrap='cloth' if t else None, period=4)
+    a.disc(*at(-24, 0), 1.8, g)
+
+def cutlass(a):      # short, broad, curved; a shell guard
+    t = a.tier
+    curve = lambda s: max(0, s + 4) ** 2 / 300.0
+    a.blade(-4, 22, 3.4, 6, curve=curve)
+    if t: a.band(-4, 16, -3.4, -2.8, 'metal', [4], curve=curve)
+    if t == 2: glow_edge(a, -2, 20, 3.4, 6, curve=curve)
+    g = 'gold' if t else 'metal'
+    a.disc(*at(-7, 2.5), 3.8, g)                                    # shell
+    a.band(-20, -7, 4.6, 5.6, g, 'bevel')                           # knuckle bow
+    a.band(-21, -19, -1, 5.6, g, 'bevel')
+    a.grip(-19, -8, 1, mat='leather' if t else 'wood', wrap='gold' if t == 2 else None, period=3)
+    if t == 2: a.gem(*at(-7, 2.5), 1.6)
+
+def gladius(a):      # short leaf blade, round pommel, ridged grip
+    t = a.tier
+    a.poly_st([(-6, -2.6), (8, -3.6), (18, -2.4), (25, 0), (18, 2.4), (8, 3.6), (-6, 2.6)], 'metal')
+    a.band(-4, 18, -0.5, 0.5, 'metal', [1 if t else 2])
+    if t == 2: glow_edge(a, -2, 23, 3.4, 8)
+    g = 'gold' if t else 'metal'
+    a.band(-9, -6, -4.6, 4.6, g if t else 'wood', 'bevel')            # oval guard
+    a.grip(-18, -10, 1.4, mat='ebony' if t == 2 else 'wood', wrap=g, period=3)
+    cx, cy = at(-21, 0)
+    a.disc(cx, cy, 2.6, g if t else 'wood')
+    if t == 2: a.gem(cx, cy, 1.2)
+
+def khopesh(a):      # hilt and a straight neck, then an arc bulging up-left that hooks back; the convex edge cuts
+    t = a.tier
+    a.grip(-26, -10, 1.2, mat='ebony' if t else 'wood', wrap='gold' if t else None, period=4)
+    a.band(-9, 0, -1.3, 1.3, 'metal', ROD)                         # neck
+    cx, cy, rm = 21.0, 13.5, 7.0                                    # the arc: centre, middle radius
+    a0, a1 = 150.0, 340.0                                           # degrees, image coordinates (y down): neck .. tip
+    def half(ang):                                                  # half thickness: 1.6 at the neck, 2.4 mid, 0 at the tip
+        u = (ang - a0) / (a1 - a0)
+        return 1.6 + 1.6 * math.sin(min(1, u / 0.55) * math.pi / 2) if u < 0.55 else 3.2 * ((1 - u) / 0.45) ** 0.7
+    def polar(x, y):
+        ang = math.degrees(math.atan2(y - cy, x - cx)) % 360
+        if ang < 90: ang += 360
+        return math.hypot(x - cx, y - cy), ang
+    def inside(x, y):
+        r, ang = polar(x, y); return a0 <= ang <= a1 and abs(r - rm) <= half(ang) * 0.75 + 0.3
+    c = a.cells(inside); a._put(c, 'metal', 'bevel')
+    for p in c:
+        r, ang = polar(*p)
+        if r - rm >= half(ang) * 0.75 - 0.9: a.px[p] = ('gem', 3) if t == 2 else ('metal', 4)
+    a.band(-11, -9, -2.4, 2.4, 'gold' if t else 'metal', 'bevel')
+    if t == 2: a.gem(*at(-10, 0), 1.2)
+    a.disc(*at(-27, 0), 1.6, 'gold' if t else 'metal')
+
+def kris(a):         # a short wavy blade with a wide asymmetric base
+    t = a.tier
+    wave = lambda s: 1.1 * math.sin(s * math.pi / 4.5)
+    a.blade(-2, 21, 2.2, 6, curve=wave)
+    a.poly_st([(-4, -2.4), (2, -2.0), (0, 5.4), (-4, 4.6)], 'metal')          # ganja (base)
+    if t == 2: glow_edge(a, 0, 19, 2.2, 6, curve=wave)
+    g = 'gold' if t else 'metal'
+    a.band(-6, -4, -2, 2, g, 'bevel')
+    a.grip(-17, -6, 1.2, mat='wood' if t < 2 else 'ebony', wrap=g if t else None, period=3)
+    a.poly_st([(-17, -1), (-21, -4), (-22, 0), (-19, 2)], 'wood' if t == 0 else g)   # bent pommel
+    if t == 2: a.gem(*at(-19, -1), 1.0)
+
 CATEGORIES = {   # category -> (draw, how it is held)
     'hammer': (hammer, 'big'), 'katana': (katana, 'big'), 'gauntlet': (gauntlet, 'flat'), 'dagger': (dagger, 'small'),
     'rapier': (rapier, 'big'), 'harp': (harp, 'flat'), 'sceptre': (sceptre, 'handheld'), 'sickle': (sickle, 'handheld'),
     'halberd': (halberd, 'big'), 'staff': (staff, 'big'), 'scythe': (scythe, 'big'), 'grimoire': (grimoire, 'flat'),
     'greatsword': (greatsword, 'big'), 'spear': (spear, 'big'), 'sword': (sword, 'handheld'), 'axe': (axe, 'handheld'),
+    'longsword': (longsword, 'handheld'), 'flamberge': (flamberge, 'big'), 'sabre': (sabre, 'handheld'),
+    'scimitar': (scimitar, 'handheld'), 'falchion': (falchion, 'handheld'), 'cutlass': (cutlass, 'handheld'),
+    'gladius': (gladius, 'handheld'), 'khopesh': (khopesh, 'handheld'), 'kris': (kris, 'handheld'),
 }
 def sprite(category, metal):
     a = Art(metal); CATEGORIES[category][0](a); return a.image()
