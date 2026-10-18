@@ -1,6 +1,23 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "runeblock:item/class_weapon/sorcerer"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": [
+          "gui",
+          "ground",
+          "fixed"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "runeblock:item/gear/class_sorcerer_grimoire"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "runeblock:item/gear/class_sorcerer_grimoire_open"
+    }
   }
 }

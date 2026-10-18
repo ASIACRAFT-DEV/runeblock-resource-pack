@@ -14,12 +14,13 @@ from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import make_class_armour as M
 
-# class -> Rimeforged model it is built on (same as the class's Rimeforged weapon in gear.yml), glow ramp
+# class -> Rimeforged model it is built on (same as the class's Rimeforged weapon in gear.yml), glow ramp.
+# Monk (gauntlets) and Sorcerer (grimoire) are made by tools/make_held_variants.py since ArcaneSouls 0.28.1.
 WEAPONS = {
-    'guardian': ('hammer', 'acc'), 'samurai': ('greatsword', 'acc'), 'monk': ('staff', 'acc'),
+    'guardian': ('hammer', 'acc'), 'samurai': ('greatsword', 'acc'),
     'assassin': ('sword', 'acc'), 'swashbuckler': ('sword', 'acc'), 'bard': ('harp', 'acc'),
     'cleric': ('mace', 'acc'), 'druid': ('staff', 'det'), 'kannagi': ('spear', 'acc'),
-    'sorcerer': ('staff', 'acc'), 'summoner': ('scythe', 'det'), 'enchanter': ('trident', 'det'),
+    'summoner': ('scythe', 'det'), 'enchanter': ('trident', 'det'),
 }
 
 

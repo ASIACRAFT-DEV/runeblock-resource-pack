@@ -1,6 +1,23 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "runeblock:item/class_weapon/monk"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": [
+          "gui",
+          "ground",
+          "fixed"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "runeblock:item/gear/class_monk_gauntlet"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "runeblock:item/gear/class_monk_gauntlet_worn"
+    }
   }
 }
