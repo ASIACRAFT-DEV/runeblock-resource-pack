@@ -78,9 +78,12 @@ for metal in NEW_METALS:
     with open(os.path.join(rb, 'items', ing + '.json'), 'w') as f:
         json.dump({'model': {'type': 'minecraft:model', 'model': f'runeblock:item/gear/{ing}'}}, f, indent=2); f.write('\n')
 # the ores (kuwusaki 2026-10-14): vanilla ore block textures with the mineral specks in the new metal; the stone stays
-for metal, src in (('mithril', 'diamond_ore'), ('bloodiron', 'iron_ore'), ('voidsteel', 'emerald_ore')):
+# 2026-10-21: Mithril read as diamond ore on the diamond_ore base (IllusionOp). It now sits on deepslate (it spawns at
+# deepslate depth) with the gold ore's nugget-shaped specks in a silver-blue of its own (ORE_PALETTE), not the cyan.
+ORE_PALETTE = {'mithril': ['#18223a', '#34507e', '#6f92c6', '#b9cdec', '#f2f7ff']}
+for metal, src in (('mithril', 'deepslate_gold_ore'), ('bloodiron', 'iron_ore'), ('voidsteel', 'emerald_ore')):
     im = Image.open(io.BytesIO(jar.read(f'assets/minecraft/textures/block/{src}.png'))).convert('RGBA')
-    px = list(im.getdata()); stops = [rgb(h) for h in METALS[metal]]
+    px = list(im.getdata()); stops = [rgb(h) for h in ORE_PALETTE.get(metal, METALS[metal])]
     speck = [p[3] > 0 and colorsys.rgb_to_hsv(p[0] / 255, p[1] / 255, p[2] / 255)[1] > 0.12 for p in px]
     lum = [(0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]) / 255 for p in px]
     lo, hi = min(l for l, k in zip(lum, speck) if k), max(l for l, k in zip(lum, speck) if k)
