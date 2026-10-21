@@ -34,7 +34,7 @@ All written by `tools/gen_metal_weapons.py <1.21.11 client jar> pack/assets` (fo
   `minecraft:display_context`: the flat sprite in the GUI, on the ground and in item frames; in a hand a 3D model. Gauntlet = a plated
   glove around the fist and forearm (ArcaneSouls 0.20.0 puts a twin in the off-hand, so both arms); grimoire = an open book whose
   `<metal>_grimoire_pages.png` is animated (8 frames page turn + 16 frames rune pulse, frametime 2). Display transforms are first guesses.
-- 3 ingots and 3 ores (recoloured vanilla ingot / diamond, iron and emerald ore textures).
+- 3 ingots and 3 ores (recoloured vanilla ingot / deepslate gold, iron and emerald ore textures; Mithril moved off the diamond look in v0.6.4).
 - `assets/minecraft/blockstates/note_block.json`: the ore BLOCKS in the world are note block states
   (`instrument=custom_head`, note 1 = Mithril, 2 = Bloodiron, 3 = Voidsteel); every other note block state keeps the vanilla model.
   A new Minecraft version with a new note block instrument needs that instrument added to the script's list.
