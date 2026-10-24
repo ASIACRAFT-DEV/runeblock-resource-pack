@@ -52,3 +52,13 @@ The vanilla hearts, drumsticks and armour are blanked here; crosshair, XP bar, a
   `tools/merge-betterhud.sh build.zip`. The merged files must match the box's config exactly, so always re-merge after a change
 - BetterHud gotchas (1.14.1, seen in game): text glyphs are built at 16 px, so layout text `scale: 0.5` = vanilla size; `/` in a `pattern` escapes the next char (write `//`); each layout draws shifted left by ~half its width, so `huds/` pixel x = wanted left edge + half the bar width
 - `shader.yml` `bar-color: pink`: BetterHud blanks that boss bar colour for its own carrier bar. Never yellow (ArcaneSouls cast bar, tracker, escort HP)
+
+## Skill objects (v0.6.9)
+3D objects that fly in skills, for ArcaneSouls 0.35.0 (`fx: object`, `rbtelegraph{…;obj=…}`, `rbobject{}`), written by
+`python3 -I tools/skill_objects.py [--preview out.png]` (the preview is a headless ray cast, no client):
+`runeblock:skill_object/<name>` for searing_lance, infernal_meteor, tidal_wave, ice_spear, spectral_blade, boulder,
+veil_lance, spirit_arrow; textures in `textures/item/skill_object/` (`water.png` is animated).
+- Every model is centred on (8, 8, 8) with its front toward NORTH (-z): the item display renderer turns items 180° about y,
+  so ArcaneSouls rotates the display's +z onto the flight. Shown with display context `none` (16 px = 1 block at scale 1).
+- 1.21.11 element rotations take any angle (`axis`+`angle`), and `light_emission` makes the fire/void/spirit parts glow.
+- Never seen in a client yet: if they fly backwards, set ArcaneSouls `vfx.objects.model-front: south` (no pack change).
