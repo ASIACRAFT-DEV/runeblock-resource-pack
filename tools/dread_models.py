@@ -47,70 +47,118 @@ def shade(c, k): return tuple(max(0, min(255, int(v * k))) for v in c[:3]) + (25
 def jitter(c, rnd, a): d = rnd.randint(-a, a); return tuple(max(0, min(255, v + d)) for v in c[:3]) + (255,)
 
 
+def mix(a, b, t): return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3)) + (255,)
+
+
+def ramp4(R, t):
+    """Continuous ramp over the 4 swatches, t 0 (dark) .. 1 (light)."""
+    t = min(max(t, 0.0), 1.0) * 3
+    i = min(int(t), 2)
+    return mix(R[i], R[i + 1], t - i)
+
+
 def paint(img, x0, y0, w, h, mat, face, pal, rnd):
-    """Fill one face rect. `mat` = '<pattern>' or '<pattern>:<ramp>' (ramp main|acc|det, default by pattern)."""
+    """Fill one face rect. `mat` = '<pattern>' or '<pattern>:<ramp>' (ramp main|acc|det, default by pattern).
+    Every pattern is lit from the top-left: a vertical gradient over the face, bevels on plate edges, and its own
+    small-scale relief (rivets, scale cells, stone blocks, cloth folds, moss clumps) so the flat layers read as depth."""
     pat, _, rk = mat.partition(':')
     R = [hexrgb(c) + (255,) for c in pal[rk or {'glow': 'acc', 'eye': 'acc', 'moss': 'acc', 'bone': 'det', 'trim': 'det',
                                                'bark': 'det', 'cloth': 'main'}.get(pat, 'main')]]
     A = [hexrgb(c) + (255,) for c in pal['acc']]
-    D = [hexrgb(c) + (255,) for c in pal['det']]
     px = img.load()
-    lit = {'up': 1.12, 'down': 0.8}.get(face, 1.0)
-    def put(x, y, c):
-        if 0 <= x < w and 0 <= y < h: px[x0 + x, y0 + y] = shade(c, lit)
+    side = face not in ('up', 'down')
+    lit = {'up': 1.1, 'down': 0.72}.get(face, 1.0)
+    bev = 2 if min(w, h) >= 10 else 1
+    stones = {}
     for y in range(h):
         for x in range(w):
-            c = R[1]
+            gy = y / max(h - 1, 1)
+            grad = (0.62 - 0.32 * gy) if side else 0.5          # top of a face catches more light
+            n = rnd.uniform(-0.035, 0.035)
             if pat in ('plate', 'ribs', 'runeplate', 'trim'):
-                c = jitter(R[1] if pat != 'trim' else R[2], rnd, 5)
-                if y == 0 or x == 0: c = R[2] if pat != 'trim' else R[3]
-                if y == h - 1 or x == w - 1: c = R[0] if pat != 'trim' else R[1]
-                if pat == 'ribs' and y % 5 == 4: c = R[0]
-                if pat == 'ribs' and y % 5 == 0 and y: c = R[2]
+                t = grad + n + (0.12 if pat == 'trim' else 0)
+                d = (x + y) - (w + h) * 0.3                       # a soft specular streak across the plate
+                if abs(d) < 1.5: t += 0.16
+                if pat == 'ribs':                                 # overlapping lames: lit top lip, shadow under
+                    k = y % 6
+                    t += {0: 0.22, 1: 0.1, 5: -0.25}.get(k, 0)
+                if y < bev or x < bev: t += 0.2
+                if y >= h - bev or x >= w - bev: t -= 0.22
+                c = ramp4(R, t)
             elif pat == 'cloth':
-                c = jitter(R[1] if x % 3 else R[0], rnd, 4)
-                if y >= h - 2: c = D[1]
+                fold = abs(math.sin((x + 0.5) * math.pi / 5.0))   # vertical folds
+                t = grad * 0.7 + 0.25 * fold + n
+                c = ramp4(R, t)
+                if y >= h - 2: c = ramp4([hexrgb(v) + (255,) for v in pal['det']], 0.45 + (0.15 if y == h - 2 else 0))
             elif pat == 'scale':
-                row, col = y // 3, (x + (y // 3 % 2) * 2) // 4
-                cy, cx = y % 3, (x + (y // 3 % 2) * 2) % 4
-                c = R[2] if cy == 0 else R[1]
-                if cx == 3: c = R[0]
-                if cy == 2: c = A[1] if (row * 3 + col) % 7 == 0 else R[0]   # molten seams between a few scales
-                c = jitter(c, rnd, 4)
+                off = (y // 4 % 2) * 3
+                cy, cx = y % 4, (x + off) % 6
+                col, row = (x + off) // 6, y // 4
+                t = 0.62 - cy * 0.13 - abs(cx - 2.5) * 0.04 + n  # each scale domed: light top, dark lower lip
+                if cx == 0 and cy == 0: t += 0.25
+                c = ramp4(R, t)
+                if cy == 3: c = ramp4(A, 0.35) if (row * 3 + col) % 7 == 0 else ramp4(R, 0.02)
+                if cx == 5 and cy < 3: c = ramp4(R, 0.08)
             elif pat == 'stone':
-                c = jitter(R[2] if (x * 7 + y * 3) % 11 else R[1], rnd, 9)
-                if rnd.random() < 0.04: c = R[3]
+                bw, bh = 7, 5
+                row = y // bh; off = (row % 2) * 3
+                key = ((x + off) // bw, row)
+                if key not in stones: stones[key] = rnd.uniform(-0.12, 0.12)
+                lx, ly = (x + off) % bw, y % bh
+                t = 0.55 + stones[key] + grad * 0.3 - 0.15 + n * 2
+                if ly == 0 or lx == 0: t += 0.18                  # block top-left edge in light
+                if ly == bh - 1 or lx == bw - 1: t = 0.05          # mortar / shadow
+                if rnd.random() < 0.03: t += 0.25
+                c = ramp4(R, t)
             elif pat == 'moss':
-                c = jitter(A[1] if rnd.random() < 0.7 else A[0], rnd, 8)
-                if rnd.random() < 0.08: c = A[2]
+                blob = math.sin(x * 1.3 + rnd.random()) * math.cos(y * 1.1)
+                t = 0.35 + 0.25 * blob + grad * 0.3 + n * 3
+                c = ramp4(A, t)
             elif pat == 'bone':
-                c = jitter(R[2], rnd, 6)
-                if y == 0: c = R[3]
-                if y == h - 1: c = R[1]
+                t = 0.55 + grad * 0.35 + n
+                if y < bev: t += 0.2
+                if y >= h - bev: t -= 0.3
+                c = ramp4(R, t)
             elif pat == 'bark':
-                c = jitter(R[1] if x % 4 else R[0], rnd, 6)
+                t = 0.35 + 0.25 * abs(math.sin(x * 0.9 + y * 0.15)) + n * 2 + grad * 0.2
+                c = ramp4(R, t)
             elif pat == 'leather':
-                c = jitter(R[1], rnd, 4)
-                if (x in (1, w - 2) or y in (1, h - 2)) and (x + y) % 2 == 0 and w > 4 and h > 4: c = D[2]
+                t = 0.35 + grad * 0.45 + n
+                if y < bev: t += 0.15
+                if y >= h - bev: t -= 0.2
+                c = ramp4(R, t)
+                if (x in (1, w - 2) or y in (1, h - 2)) and (x + y) % 2 == 0 and w > 5 and h > 5:
+                    c = ramp4([hexrgb(v) + (255,) for v in pal['det']], 0.7)
             elif pat == 'void':
-                c = jitter(R[0], rnd, 2)
+                c = ramp4(R, 0.02 + n * 0.3)
             elif pat == 'glow':
-                c = R[2]
-                if w > 2 and h > 2 and 0 < x < w - 1 and 0 < y < h - 1: c = R[3]
+                e = min(x, y, w - 1 - x, h - 1 - y)
+                c = ramp4(R, 0.6 + 0.4 * min(e, 2) / 2)
             elif pat == 'eye':
-                c = R[3] if (w <= 2 or 0 < x < w - 1) else R[2]
-            px[x0 + x, y0 + y] = shade(c, lit)
-    # pattern overlays
+                c = ramp4(R, 1.0 if (w <= 2 or 0 < x < w - 1) else 0.75)
+            else:
+                c = ramp4(R, grad)
+            px[x0 + x, y0 + y] = shade(c, lit) if pat not in ('glow', 'eye') else c
+    def put(x, y, c):
+        if 0 <= x < w and 0 <= y < h: px[x0 + x, y0 + y] = c
+    # relief overlays
+    if pat in ('plate', 'trim', 'runeplate') and side and w >= 8 and h >= 8:
+        for rx, ry in ((2, 2), (w - 3, 2), (2, h - 3), (w - 3, h - 3)):   # rivets with a shadow
+            put(rx, ry, shade(ramp4(R, 0.95), lit)); put(rx + 1, ry + 1, shade(ramp4(R, 0.0), lit))
     if pat == 'runeplate' and w >= 6 and h >= 6 and face in ('north', 'south'):
         cx = w // 2
-        for y in range(2, h - 2): put(cx, y, A[2]); put(cx - 1, y, A[1] if y % 2 else R[1])
+        for y in range(2, h - 2):
+            put(cx, y, ramp4(A, 0.8)); put(cx + 1, y, ramp4(A, 0.35)); put(cx - 1, y, shade(ramp4(R, 0.0), lit))
         for k in range(3, h - 3, 5):
-            for d in range(1, min(4, cx)): put(cx - d, k + d // 2, A[2]); put(cx + d, k + d // 2, A[2])
+            for d in range(1, min(4, cx)):
+                put(cx - d, k + d // 2, ramp4(A, 0.75)); put(cx + d, k + d // 2, ramp4(A, 0.75))
+                put(cx - d, k + d // 2 + 1, shade(ramp4(R, 0.0), lit))
     if pat == 'stone' and w >= 6 and h >= 6:
         for _ in range(2):   # cracks
             x, y = rnd.randrange(w), 0
             while y < h:
-                put(x, y, R[0]); y += 1; x += rnd.choice((-1, 0, 0, 1))
+                put(x, y, shade(ramp4(R, 0.0), lit)); put(x + 1, y, shade(ramp4(R, 0.75), lit))
+                y += 1; x += rnd.choice((-1, 0, 0, 1))
 
 
 class Atlas:
@@ -157,6 +205,84 @@ def body_base(torso, arm, hips, leg, boot, boot_top=5.5, hip_low=11.5, hip_top=1
     return [C('torso', [-5, 11, -3], [5, 25, 3], torso), C('right_arm', [3, 11, -3], [9, 25, 3], arm),
             C('hips', [-4.5, hip_low, -2.5], [4.5, hip_top, 2.5], hips), C('right_leg', [-0.5, -0.5, -2.5], [4.5, 12.5, 2.5], leg),
             C('right_boot', [-1, -1, -3], [5, boot_top, 3], boot)]
+
+
+def lames(bone, x0, x1, ytop, n, step, zf, mat):
+    """n overlapping horizontal bands going down from ytop; each band sits a little in front of the one below it."""
+    out = []
+    for i in range(n):
+        y1 = ytop - i * step
+        z = zf - 0.18 * (n - i)
+        out.append(C(bone, [x0, y1 - step - 0.5, z], [x1, y1, z + 0.45], mat))
+    return out
+
+
+def front_back(cubes):
+    """A front-facing piece list plus its copy on the back (z mirrored)."""
+    out = list(cubes)
+    for c in cubes:
+        m = dict(c)
+        m['from'], m['to'] = [c['from'][0], c['from'][1], -c['to'][2]], [c['to'][0], c['to'][1], -c['from'][2]]
+        if c['origin']: m['origin'] = [c['origin'][0], c['origin'][1], -c['origin'][2]]
+        if c['rot']: m['rot'] = [-c['rot'][0], c['rot'][1], c['rot'][2]]
+        m['faces'] = {{'north': 'south', 'south': 'north'}.get(k, k): v for k, v in c['faces'].items()}
+        out.append(m)
+    return out
+
+
+def depth_layers(s):
+    """Raised, overlapping pieces per set: what the depth bake shades into plates, lips and shadows."""
+    if s == 'bloodrune':
+        return (lames('torso', -4.4, 4.4, 15.8, 3, 1.4, -3.55, 'ribs')                                   # abdomen lames
+                + [C('torso', [-4.6, 17.6, -3.9], [-0.4, 23.0, -3.3], 'plate', rot=[0, 0, -8], origin=[-2.5, 20, -3.6]),
+                   C('torso', [0.4, 17.6, -3.9], [4.6, 23.0, -3.3], 'plate', rot=[0, 0, 8], origin=[2.5, 20, -3.6]),
+                   C('torso', [-3.8, 23.4, -3.8], [3.8, 25.2, 3.8], 'plate:det'),                            # gorget
+                   C('right_arm', [2.6, 19.2, -3.9], [9.6, 21.4, 3.9], 'plate'), C('right_arm', [2.6, 17.4, -3.6], [9.4, 19.6, 3.6], 'plate'),
+                   C('right_arm', [2.8, 16.8, -3.9], [9.2, 18.2, -3.4], 'plate:det'),                        # elbow cop
+                   C('right_leg', [-0.6, 9.6, -2.9], [4.6, 12.6, -2.6], 'ribs'),
+                   C('right_leg', [0.6, 7.4, -3.4], [3.4, 8.6, -2.9], 'plate'),
+                   C('right_boot', [-1.2, 2.4, -3.6], [5.2, 3.6, -3.1], 'plate'), C('right_boot', [-1.2, 1.2, -3.8], [5.2, 2.6, -3.3], 'plate')]
+                + front_back([C('hips', [-4.6, 12.0, -3.1], [-0.3, 15.0, -2.6], 'plate:det'), C('hips', [0.3, 12.0, -3.1], [4.6, 15.0, -2.6], 'plate:det')]))
+    if s == 'necrotic':
+        return ([C('torso', [-2.6, 11.0, -3.9], [2.6, 23.0, -3.4], 'cloth:det', {'north': 'cloth:acc'}),         # tabard
+                 C('torso', [-5.4, 21.0, -3.8], [5.4, 25.4, 3.8], 'cloth'),                                   # mantle
+                 C('torso', [-5.6, 22.6, -4.1], [-2.6, 25.4, 4.1], 'bone'), C('torso', [2.6, 22.6, -4.1], [5.6, 25.4, 4.1], 'bone'),
+                 C('right_arm', [2.6, 17.0, -3.7], [9.4, 18.6, 3.7], 'cloth'), C('right_arm', [2.6, 14.2, -3.9], [9.4, 16.0, 3.9], 'cloth'),
+                 C('right_leg', [-0.6, 5.0, -2.9], [4.6, 12.6, -2.6], 'cloth'), C('right_leg', [-0.6, 0.8, -3.1], [4.6, 5.4, -2.7], 'cloth'),
+                 C('right_boot', [-1.2, 1.0, -3.6], [5.2, 2.6, 3.6], 'leather:det')]
+                + front_back([C('hips', [-2.4, 11.5, -3.2], [2.4, 16.0, -2.6], 'cloth:det')]))
+    if s == 'dragonforged':
+        return (lames('torso', -4.4, 4.4, 15.6, 3, 1.4, -3.55, 'plate')
+                + [C('torso', [-4.7, 16.6, -3.9], [-0.3, 23.2, -3.3], 'scale', rot=[0, 0, -10], origin=[-2.5, 20, -3.6]),
+                   C('torso', [0.3, 16.6, -3.9], [4.7, 23.2, -3.3], 'scale', rot=[0, 0, 10], origin=[2.5, 20, -3.6]),
+                   C('right_arm', [2.6, 19.0, -3.9], [9.7, 21.2, 3.9], 'scale'), C('right_arm', [2.6, 17.2, -3.7], [9.5, 19.4, 3.7], 'scale'),
+                   C('right_arm', [2.6, 18.8, -4.0], [9.7, 19.3, 4.0], 'trim'),
+                   C('right_arm', [3.4, 12.0, -3.8], [8.6, 13.0, -3.3], 'trim'),
+                   C('right_leg', [-0.6, 8.6, -2.9], [4.6, 12.6, -2.6], 'scale'), C('right_leg', [-0.6, 0.8, -2.9], [4.6, 4.8, -2.6], 'scale'),
+                   C('right_leg', [1.4, 3.0, -3.3], [2.6, 8.4, -2.9], 'trim'),
+                   C('right_boot', [-1.2, 2.0, -3.7], [5.2, 3.4, -3.2], 'plate'), C('right_boot', [-1.2, 3.2, -3.5], [5.2, 4.6, -3.1], 'plate')]
+                + front_back([C('hips', [-4.6, 12.4, -3.2], [-0.3, 16.0, -2.6], 'scale'), C('hips', [0.3, 12.4, -3.2], [4.6, 16.0, -2.6], 'scale')]))
+    if s == 'shadow_assassin':
+        return ([C('torso', [-5.1, 13.4, -3.6], [1.0, 22.6, -3.2], 'leather', rot=[0, 0, 6], origin=[-2, 18, -3.4]),   # wrap jerkin
+                 C('torso', [-5.4, 22.4, -3.6], [5.4, 25.3, 3.6], 'cloth'),                                   # cowl collar
+                 C('torso', [-4.6, 11.0, -3.9], [-2.6, 13.4, -3.5], 'leather:det'), C('torso', [-1.8, 11.0, -3.8], [0.0, 12.8, -3.5], 'leather:det'),
+                 C('right_arm', [2.8, 15.8, -3.6], [9.2, 17.2, 3.6], 'trim:det'), C('right_arm', [2.8, 12.4, -3.7], [9.2, 14.0, 3.7], 'trim:det'),
+                 C('right_arm', [3.0, 20.6, -3.5], [9.0, 22.8, 3.5], 'leather'),
+                 C('right_leg', [0.0, 9.8, -3.0], [4.2, 11.6, -2.6], 'leather:det'),
+                 C('right_boot', [-1.2, 0.6, -3.6], [5.2, 2.4, 3.6], 'trim:det'), C('right_boot', [-1.2, 2.8, -3.5], [5.2, 4.0, 3.5], 'trim:det')]
+                + front_back([C('hips', [-4.0, 11.5, -3.0], [-1.4, 15.6, -2.6], 'cloth'), C('hips', [1.4, 11.5, -3.0], [4.0, 15.6, -2.6], 'cloth')]))
+    if s == 'earthwarden':
+        return ([C('torso', [-4.8, 19.4, -3.9], [-0.2, 23.8, -3.3], 'stone', rot=[0, 0, -4], origin=[-2.5, 21.6, -3.6]),
+                 C('torso', [0.2, 19.0, -3.9], [4.8, 23.4, -3.3], 'stone', rot=[0, 0, 5], origin=[2.5, 21.2, -3.6]),
+                 C('torso', [-4.2, 13.4, -3.7], [-0.6, 17.6, -3.3], 'stone'), C('torso', [0.6, 13.2, -3.7], [4.2, 17.4, -3.3], 'stone'),
+                 C('torso', [-5.2, 23.2, -4.0], [5.2, 25.4, 4.0], 'stone', {'up': 'moss'}),
+                 C('right_arm', [2.4, 18.4, -4.0], [9.8, 21.0, 4.0], 'stone'), C('right_arm', [2.4, 16.6, -3.8], [9.6, 18.8, 3.8], 'stone'),
+                 C('right_arm', [2.6, 20.4, -4.2], [6.4, 21.4, 0.0], 'moss'),
+                 C('right_leg', [-0.6, 10.4, -3.0], [4.6, 12.6, -2.6], 'stone'), C('right_leg', [-0.6, 3.4, -3.0], [4.6, 5.4, -2.6], 'stone'),
+                 C('right_leg', [0.2, 4.8, -3.6], [3.8, 8.6, -2.9], 'stone', {'north': 'stone'}),
+                 C('right_boot', [-1.3, 1.4, -3.9], [5.3, 3.8, -3.2], 'stone'), C('right_boot', [-1.3, 3.6, -3.9], [1.8, 4.4, -3.6], 'moss')]
+                + front_back([C('hips', [-4.6, 12.0, -3.1], [4.6, 13.6, -2.6], 'bark'), C('hips', [-3.2, 13.6, -3.0], [3.2, 16.6, -2.6], 'stone')]))
+    return []
 
 
 def bloodrune():
@@ -307,6 +433,67 @@ def earthwarden():
     return g
 
 
+# ---- depth-aware bake --------------------------------------------------------------------------------------------
+def cast_depth(elems, p, d):
+    """B.cast that also returns the hit distance."""
+    hits = []
+    for e in elems:
+        r = e.hit(p, d)
+        if r: hits.append((r[0], e, r[1], r[2]))
+    for t, e, face, q in sorted(hits, key=lambda h: h[0]):
+        c = e.sample(face, q)
+        if c and c[3] >= 128:
+            n = e.normal_world(list(B.FACE_N[face]))
+            lam = max(0.0, -sum(n[i] * d[i] for i in range(3)))
+            k = 0.62 + 0.38 * lam
+            return (int(c[0] * k), int(c[1] * k), int(c[2] * k), 255), t
+    return None, None
+
+
+def bake_layer(bones, layer):
+    """B.bake_layer plus depth shading: on each face of the vanilla box, a texel whose neighbour up/left sits nearer
+    (a raised plate) is in that plate's shadow, a texel nearer than its up/left neighbour is a lit rim, and deeper
+    texels are a little darker. Light comes from the top-left like the painted textures."""
+    S = B.SCALE
+    img = Image.new('RGBA', (64 * S, 32 * S), (0, 0, 0, 0))
+    for box, bone, inf in B.LAYERS[layer]:
+        (x0, y0, z0), (x1, y1, z1), (u0, v0) = B.BOX[box]
+        x0, y0, z0, x1, y1, z1 = x0 - inf, y0 - inf, z0 - inf, x1 + inf, y1 + inf, z1 + inf
+        w, h, d = B.BOX[box][1][0] - B.BOX[box][0][0], B.BOX[box][1][1] - B.BOX[box][0][1], B.BOX[box][1][2] - B.BOX[box][0][2]
+        W, H, D = x1 - x0, y1 - y0, z1 - z0
+        faces = {
+            'up':    ((u0 + d, v0), (w, d), lambda s_, t_: (x1 - s_ * W, y1, z1 - t_ * D)),
+            'down':  ((u0 + d + w, v0), (w, d), lambda s_, t_: (x1 - s_ * W, y0, z0 + t_ * D)),
+            'east':  ((u0, v0 + d), (d, h), lambda s_, t_: (x1, y1 - t_ * H, z1 - s_ * D)),
+            'north': ((u0 + d, v0 + d), (w, h), lambda s_, t_: (x1 - s_ * W, y1 - t_ * H, z0)),
+            'west':  ((u0 + d + w, v0 + d), (d, h), lambda s_, t_: (x0, y1 - t_ * H, z0 + s_ * D)),
+            'south': ((u0 + 2 * d + w, v0 + d), (w, h), lambda s_, t_: (x0 + s_ * W, y1 - t_ * H, z1)),
+        }
+        elems = bones.get(bone, [])
+        for face, ((fu, fv), (fw, fh), at) in faces.items():
+            n = B.FACE_N[face]
+            FW, FH = fw * S, fh * S
+            col, dep = {}, {}
+            for j in range(FH):
+                for i in range(FW):
+                    p = at((i + 0.5) / FW, (j + 0.5) / FH)
+                    c, t = cast_depth(elems, [p[k] + n[k] * 30 for k in range(3)], [-n[0], -n[1], -n[2]])
+                    if c: col[i, j], dep[i, j] = c, t - 30
+            if not dep: continue
+            dmin = min(dep.values())
+            for (i, j), c in col.items():
+                z = dep[i, j]
+                k = 1.0 - min(0.22, 0.09 * (z - dmin))            # deeper = darker
+                up, lf = dep.get((i, j - 1)), dep.get((i - 1, j))
+                dn, rt = dep.get((i, j + 1)), dep.get((i + 1, j))
+                for nb, s_shadow in ((up, 0.6), (lf, 0.7), (dep.get((i - 1, j - 1)), 0.75), (dep.get((i, j - 2)), 0.8)):
+                    if nb is not None and nb < z - 0.2: k = min(k, s_shadow)   # under a raised neighbour: shadow
+                if (up is not None and up > z + 0.2) or (lf is not None and lf > z + 0.2): k *= 1.28   # lit rim
+                if (dn is not None and dn > z + 0.2) or (rt is not None and rt > z + 0.2): k *= 0.78   # lower lip
+                img.putpixel((fu * S + i, fv * S + j), shade(c, k))
+    return img
+
+
 SETS = {'bloodrune': bloodrune, 'necrotic': necrotic, 'dragonforged': dragonforged,
         'shadow_assassin': shadow_assassin, 'earthwarden': earthwarden}
 BONES = ['helmet', 'torso', 'right_arm', 'left_arm', 'hips', 'right_leg', 'left_leg', 'right_boot', 'left_boot']
@@ -318,7 +505,13 @@ def face_size(f, t, face):
 
 
 def build_bbmodel(s):
-    cubes = SETS[s]()
+    base = SETS[s]()
+    for c in base[5:]:   # the set's own front details (emblems, eyes, straps) sit on top of the raised depth layers
+        if c['bone'] != 'helmet' and c['from'][2] < -2.55:
+            c['from'] = [c['from'][0], c['from'][1], c['from'][2] - 0.75]
+            c['to'] = [c['to'][0], c['to'][1], c['to'][2] - 0.75]
+            if c['origin']: c['origin'] = [c['origin'][0], c['origin'][1], c['origin'][2] - 0.75]
+    cubes = base + depth_layers(s)
     cubes += mirror(cubes, 'right_arm', 'left_arm') + mirror(cubes, 'right_leg', 'left_leg') + mirror(cubes, 'right_boot', 'left_boot')
     atlas = Atlas(PALETTES[s], zlib.crc32(s.encode()))
     groups = {b: {'name': b, 'origin': [0, 0, 0], 'rotation': [0, 0, 0], 'uuid': str(uuid.uuid4()), 'children': []} for b in BONES}
@@ -381,12 +574,12 @@ def preview(bbdir, A, out):
             els.append(B.BoxUV(bx, 0.5, lay['humanoid_leggings'], mir))
         for bx, mir in (('body', False), ('arm', False), ('arm', True), ('leg', False), ('leg', True)):
             els.append(B.BoxUV(bx, 1.0, lay['humanoid'], mir))
-        tiles.append([B.render(els, yaw, 8, 200, [0, 19, 0], 36) for yaw in (-25, 155)])
-    tw, th = 400, tiles[0][0].height + 26
+        tiles.append([B.render(els, yaw, 8, 320, [0, 19, 0], 36) for yaw in (-25, 155)])
+    tw, th = 640, tiles[0][0].height + 26
     sheet = Image.new('RGBA', (len(tiles) * tw, th), (40, 40, 48, 255))
     dr = ImageDraw.Draw(sheet)
     for i, (s, pair) in enumerate(zip(SETS, tiles)):
-        sheet.alpha_composite(pair[0], (i * tw, 24)); sheet.alpha_composite(pair[1], (i * tw + 200, 24))
+        sheet.alpha_composite(pair[0], (i * tw, 24)); sheet.alpha_composite(pair[1], (i * tw + 320, 24))
         dr.text((i * tw + 8, 6), SET_NAMES[s], fill=(236, 232, 240, 255))
     sheet.save(out)
 
@@ -413,7 +606,7 @@ def main():
         for layer in B.LAYERS:
             p = os.path.join(A, 'textures', 'entity', 'equipment', layer, f'{key}.png')
             os.makedirs(os.path.dirname(p), exist_ok=True)
-            B.bake_layer(bones, layer).save(p)
+            bake_layer(bones, layer).save(p)
         B.write_json(os.path.join(A, 'equipment', f'{key}.json'), {'layers': {
             'humanoid': [{'texture': f'runeblock:{key}'}], 'humanoid_leggings': [{'texture': f'runeblock:{key}'}]}})
         d = os.path.join(A, 'textures', 'item', 'dread_armour'); os.makedirs(d, exist_ok=True)
