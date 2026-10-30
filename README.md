@@ -70,3 +70,10 @@ E107 Champion · E108 Divine · E109 Immortal · E10A Adventurer. 16 px textures
 high (one chat line), so they are sharp at GUI scale 2. Written by `python3 -I tools/rank_glyphs.py <MMO/rank-icons> pack/assets`
 (icons drawn by `MMO/tools/rank_icons.py`). Glyphs take the text colour, so a prefix must put `&f` before the character.
 Fonts from packs stack, so this file only adds these characters to the vanilla font.
+
+## World map tiles (v0.7.1)
+The picture behind the client mod's world map (asc-mmo-gui 0.2.5 `MapScreen`, data from the WorldMap plugin):
+`textures/map/t_<tx>_<tz>.png`, 512 px tiles at 2 blocks per pixel, tile (0, 0) = blocks 0..1023 × 0..1023, ungenerated land
+transparent, colours quantised to 256. 34 tiles for NEPTAR (`tiles.json` lists them; the WorldMap config carries the same list).
+Written by `python3 -I MMO/tools/map_tiles.py <box world/region dir> <1.21.11 client jar> pack/assets` from the box's region
+files; re-run it when the world changes enough to matter, then release a new pack version.
