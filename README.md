@@ -62,3 +62,11 @@ veil_lance, spirit_arrow; textures in `textures/item/skill_object/` (`water.png`
   so ArcaneSouls rotates the display's +z onto the flight. Shown with display context `none` (16 px = 1 block at scale 1).
 - 1.21.11 element rotations take any angle (`axis`+`angle`), and `light_emission` makes the fire/void/spirit parts glow.
 - Never seen in a client yet: if they fly backwards, set ArcaneSouls `vfx.objects.model-front: south` (no pack change).
+
+## Rank icons (v0.7.0)
+11 rank icons as characters of the `minecraft:default` font, so they show in chat, TAB and any text:
+U+E100 Owner · E101 Grand Master · E102 Game Master · E103 Moderator · E104 Helper · E105 Knight · E106 Hero ·
+E107 Champion · E108 Divine · E109 Immortal · E10A Adventurer. 16 px textures in `textures/font/rank/`, drawn 8 units
+high (one chat line), so they are sharp at GUI scale 2. Written by `python3 -I tools/rank_glyphs.py <MMO/rank-icons> pack/assets`
+(icons drawn by `MMO/tools/rank_icons.py`). Glyphs take the text colour, so a prefix must put `&f` before the character.
+Fonts from packs stack, so this file only adds these characters to the vanilla font.
