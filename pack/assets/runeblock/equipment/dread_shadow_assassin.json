@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "runeblock:dread_shadow_assassin"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "runeblock:dread_shadow_assassin"
+      }
+    ]
+  }
+}

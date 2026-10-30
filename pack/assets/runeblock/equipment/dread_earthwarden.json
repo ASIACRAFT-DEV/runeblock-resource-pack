@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "runeblock:dread_earthwarden"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "runeblock:dread_earthwarden"
+      }
+    ]
+  }
+}
