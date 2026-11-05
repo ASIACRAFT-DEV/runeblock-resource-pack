@@ -53,6 +53,21 @@ The vanilla hearts, drumsticks and armour are blanked here; crosshair, XP bar, a
 - BetterHud gotchas (1.14.1, seen in game): text glyphs are built at 16 px, so layout text `scale: 0.5` = vanilla size; `/` in a `pattern` escapes the next char (write `//`); each layout draws shifted left by ~half its width, so `huds/` pixel x = wanted left edge + half the bar width
 - `shader.yml` `bar-color: pink`: BetterHud blanks that boss bar colour for its own carrier bar. Never yellow (ArcaneSouls cast bar, tracker, escort HP)
 
+## Mockup HUD M1 (v0.8.0, ArcaneSouls 0.44.0)
+HP / MP panels, level shield, EXP bar and the hotbar ring of the approved mockup art (`art/mockup-hud/`, drawn by
+`tools/gen_mockup_hud.py`, spots in its `layout.json`). `python3 -I tools/gen_hud_m1.py` writes `betterhud/{images,layouts,huds}/runeblock_m1.yml`
++ `betterhud/assets/rb_m1_*.png`; `tools/gen_hud.py` copies the art hotbar into the vanilla sprites.
+- The layout is gated on `%arcane_packhud%` = true (ArcaneSouls `hud.layout: pack` AND the player's pack loaded); the v0.3.x bars
+  (`runeblock.yml`) are gated on the opposite, so each player sees one. `betterhud/config.yml` = the box file + `runeblock_m1` in `default-hud`.
+- The hotbar sprites are vanilla, so every player with this pack gets the new hotbar whatever `hud.layout` says. The vanilla XP bar and
+  level number are NOT blanked here (a pack can't do it per player): ArcaneSouls empties them for pack-layout players; `disable-level-text` stays false.
+- `offset: left` on the layout (BetterHud 1.14.1 sources): x = left edge, no half-width shift. BetterHud trims transparent borders and adds
+  back only the left trim, so the generator adds a picture's empty top rows to its y.
+- `hud reload` works from the panel/server console only: over RCON it does nothing (no log line, build.zip not rebuilt; checked on a local
+  1.14.1 server 2026-11-06). build.zip is only rewritten when the pack content changes (a text colour change doesn't).
+- Check without a client: `python3 -I tools/composite_betterhud.py --build build.zip --out <dir>` places the generated pictures at the y
+  decoded from the generated font ascents over the GUI-3 shot and compares them with `layout.json`.
+
 ## Skill objects (v0.6.9)
 3D objects that fly in skills, for ArcaneSouls 0.35.0 (`fx: object`, `rbtelegraph{…;obj=…}`, `rbobject{}`), written by
 `python3 -I tools/skill_objects.py [--preview out.png]` (the preview is a headless ray cast, no client):

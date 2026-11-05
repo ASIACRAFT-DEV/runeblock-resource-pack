@@ -2,6 +2,12 @@
 # Text scale 0.5: BetterHud builds the font at 16 px, 0.5 = the vanilla 8 px line, so the numbers sit fully above the bar.
 # In a pattern '/' escapes the next character: '//' prints one slash (a single '/' vanished)
 rb_hp:
+  # v0.8.0: only on the client layout (ArcaneSouls hud.layout client, or no pack): the M1 HUD (runeblock_m1.yml) replaces it
+  conditions:
+    1:
+      first: "papi:arcane_packhud"
+      second: "'true'"
+      operation: "!="
   images:
     1:
       name: rb_hp_frame
@@ -23,6 +29,12 @@ rb_hp:
       x: 1
       y: -9
 rb_mana:
+  # v0.8.0: only on the client layout (ArcaneSouls hud.layout client, or no pack): the M1 HUD (runeblock_m1.yml) replaces it
+  conditions:
+    1:
+      first: "papi:arcane_packhud"
+      second: "'true'"
+      operation: "!="
   images:
     1:
       name: rb_mana_frame

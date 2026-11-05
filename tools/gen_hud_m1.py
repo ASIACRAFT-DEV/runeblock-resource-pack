@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+"""Mockup HUD milestone M1 (docs/spec/HUD_mockup_build_plan_2026-11-05.md): HP / MP panels, level shield, EXP bar,
+hotbar ring, from the approved art in art/mockup-hud/ (tools/gen_mockup_hud.py) and its layout.json.
+
+Writes:
+  betterhud/assets/rb_m1_*.png          the BetterHud pictures (copies of the art)
+  betterhud/images/runeblock_m1.yml     image definitions (fills = listener images)
+  betterhud/layouts/runeblock_m1.yml    one layout, every piece at its layout.json spot, gated on %arcane_packhud%
+  betterhud/huds/runeblock_m1.yml       the hud (bottom centre); listed in betterhud/config.yml default-hud
+The reskinned vanilla hotbar sprites (hotbar.png, hotbar_selection.png) are written by tools/gen_hud.py.
+
+Placement (BetterHud 1.14.1, read in its sources): the layout uses `offset: left`, so an element's x is its left edge
+(the default `center` shifts the whole layout left by half its widest image: the "half-width quirk" of v0.3.x);
+y is the top edge. BetterHud trims transparent borders off every picture and adds back the LEFT trim (xOffset) but
+not the TOP trim (yOffset is never read in HudImageParser), so y here = layout y + the picture's empty top rows.
+Text: BetterHud builds the font at 16 px, scale 0.5 = the vanilla 8 px line; `align: center` centres on x; in a
+pattern '/' escapes the next character, so '//' prints one slash.
+
+    python3 -I tools/gen_hud_m1.py
+"""
+import json
+import os
+import shutil
+from PIL import Image
+
+ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+ART = os.path.join(ROOT, 'art', 'mockup-hud')
+BH = os.path.join(ROOT, 'betterhud')
+P = 'rb_m1_'
+
+# pieces in draw order (later = on top); texts are drawn after every picture
+PIECES = ['hotbar_ring', 'exp_frame', 'exp_fill', 'laurel_bar_l', 'laurel_bar_r', 'hp_panel', 'mp_panel',
+          'hp_fill', 'mp_fill', 'icon_heart', 'icon_mana', 'level_shield']
+# listener pictures: split steps (the plan keeps bars at ~30 steps: pack size), split side, listener
+FILLS = {
+    'exp_fill': (60, 'left', {'class': 'placeholder', 'value': '(number)papi:arcane_xp_pct', 'max': '100'}),
+    'hp_fill': (27, 'left', {'class': 'health'}),
+    'mp_fill': (27, 'right', {'class': 'placeholder', 'value': '(number)papi:arcane_mana',
+                              'max': '(number)papi:arcane_mana_max'}),
+}
+TEXT_LIGHT, TEXT_EXP, TEXT_LEVEL = '#F8F0E6', '#F4EEDC', '#3A220C'
+# text: (pattern, centre x, top y, colour, shadow) in GUI px from the bottom centre (layout.json notes)
+TEXTS = [
+    ('EXP [papi:arcane_xp] // [papi:arcane_xp_next]', 0, -36, TEXT_EXP, True),
+    ('[health] // [max_health]', -54, -60, TEXT_LIGHT, True),
+    ('[papi:arcane_mana] // [papi:arcane_mana_max]', 54, -60, TEXT_LIGHT, True),
+    ('[papi:arcane_level]', 0, -57, TEXT_LEVEL, False),
+]
+GATE = {'1': {'first': 'papi:arcane_packhud', 'second': "'true'", 'operation': '=='}}
+
+
+def top_trim(im):
+    bb = im.getbbox()
+    return bb[1] if bb else 0
+
+
+def dump(obj, indent=0):
+    """Tiny YAML writer (keeps key order, quotes every string)."""
+    out = []
+    pad = '  ' * indent
+    for k, v in obj.items():
+        if isinstance(v, dict):
+            out.append('%s%s:' % (pad, k))
+            out.extend(dump(v, indent + 1))
+        else:
+            out.append('%s%s: %s' % (pad, k, json.dumps(v) if isinstance(v, str) else str(v).lower() if isinstance(v, bool) else v))
+    return out
+
+
+def main():
+    layout = json.load(open(os.path.join(ART, 'layout.json')))
+    os.makedirs(os.path.join(BH, 'assets'), exist_ok=True)
+
+    images = {}
+    for n in PIECES:
+        shutil.copyfile(os.path.join(ART, n + '.png'), os.path.join(BH, 'assets', P + n + '.png'))
+        if n in FILLS:
+            split, side, listener = FILLS[n]
+            images[P + n] = {'type': 'listener', 'file': P + n + '.png', 'split': split, 'split-type': side,
+                             'setting': {'listener': listener}}
+        else:
+            images[P + n] = {'type': 'single', 'file': P + n + '.png'}
+
+    el_images = {}
+    for i, n in enumerate(PIECES, 1):
+        L = layout[n]
+        im = Image.open(os.path.join(ART, n + '.png')).convert('RGBA')
+        el_images[str(i)] = {'name': P + n, 'x': L['x'], 'y': L['y'] + top_trim(im)}
+    el_texts = {}
+    for i, (pattern, x, top, color, shadow) in enumerate(TEXTS, 1):
+        t = {'name': 'rb_font', 'pattern': pattern, 'color': color, 'align': 'center', 'scale': 0.5, 'x': x, 'y': top}
+        if pattern.startswith('[health]'):
+            t['placeholder-string-format'] = {'number': '#,##0'}
+        if shadow:
+            t['outline'] = True
+        el_texts[str(i)] = t
+    lay = {'rb_m1': {'offset': 'left', 'conditions': GATE, 'images': el_images, 'texts': el_texts}}
+    hud = {'runeblock_m1': {'layouts': {'1': {'name': 'rb_m1', 'gui': {'x': 50, 'y': 100}, 'pixel': {'x': 0, 'y': 0}}}}}
+
+    head = '# GENERATED by tools/gen_hud_m1.py from art/mockup-hud (layout.json): edit the script, not this file.\n'
+    for sub, obj, note in (
+            ('images', images, '# M1 pictures. Fills are listener images split in ~3 px steps.\n'),
+            ('layouts', lay, '# M1 bottom HUD, drawn only when %arcane_packhud% is true (ArcaneSouls 0.44.0 hud.layout: pack and\n'
+                             '# the player\'s pack loaded). offset: left = x is the left edge; y = top edge; texts centred on x.\n'),
+            ('huds', hud, '# Anchored at the bottom centre (gui 50/100); every position is in the layout.\n')):
+        with open(os.path.join(BH, sub, 'runeblock_m1.yml'), 'w') as f:
+            f.write(head + note + '\n'.join(dump(obj)) + '\n')
+    print('wrote betterhud/{images,layouts,huds}/runeblock_m1.yml + %d pictures' % len(PIECES))
+
+
+if __name__ == '__main__':
+    main()

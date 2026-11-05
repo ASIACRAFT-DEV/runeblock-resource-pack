@@ -4,7 +4,8 @@
 Writes two sets of pictures, in the asc-mmo-gui dark-fantasy palette:
   pack/assets/minecraft/textures/gui/sprites/hud/   vanilla sprite overrides in this pack:
       hotbar.png (182x22) + hotbar_selection.png (24x23): reskinned hotbar, same geometry, so the 9 slots, the
-      selection and the 1-9 keys work exactly as vanilla
+      selection and the 1-9 keys work exactly as vanilla. v0.8.0: copied from the mockup art (art/mockup-hud,
+      tools/gen_mockup_hud.py); a vanilla sprite, so EVERY player with the pack sees it, whatever hud.layout says
       heart/*, food_*, armor_*: blanked (9x9 transparent). Vehicle hearts, air bubbles, XP bar and crosshair stay
   betterhud/assets/   BetterHud images (upload to the box's plugins/BetterHud/assets/):
       rb_hp_frame / rb_hp_fill (red) + rb_mana_frame / rb_mana_fill (blue): 90x9 bars over the hotbar, where the
@@ -106,8 +107,10 @@ def fill(hi, mid, lo):
 
 
 def main():
-    save(hotbar(), SPRITES, 'hotbar.png')
-    save(selection(), SPRITES, 'hotbar_selection.png')
+    # v0.8.0: the approved mockup hotbar (M1); hotbar() / selection() are the v0.3.x look
+    art = os.path.join(ROOT, 'art', 'mockup-hud')
+    save(Image.open(os.path.join(art, 'hotbar.png')).convert('RGBA'), SPRITES, 'hotbar.png')
+    save(Image.open(os.path.join(art, 'hotbar_selection.png')).convert('RGBA'), SPRITES, 'hotbar_selection.png')
     blank = Image.new('RGBA', (9, 9), CLEAR)
     vanilla_hearts = ['container', 'full', 'half', 'hardcore_full', 'hardcore_half']
     kinds = ['', 'poisoned_', 'withered_', 'frozen_', 'absorbing_']
