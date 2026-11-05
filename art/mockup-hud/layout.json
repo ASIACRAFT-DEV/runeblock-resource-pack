@@ -1,0 +1,337 @@
+{
+ "hotbar": {
+  "anchor": "bottom",
+  "x": -91,
+  "y": -22,
+  "w": 182,
+  "h": 22,
+  "note": "vanilla sprite gui/sprites/hud/hotbar.png"
+ },
+ "hotbar_selection": {
+  "anchor": "bottom",
+  "x": -92,
+  "y": -23,
+  "w": 24,
+  "h": 23,
+  "note": "vanilla sprite; x = -92 + 20*slot"
+ },
+ "hotbar_ring": {
+  "anchor": "bottom",
+  "x": -102,
+  "y": -27,
+  "w": 204,
+  "h": 27,
+  "note": "BetterHud image; studs overlap the off-hand slot (x -120..-92)"
+ },
+ "exp_frame": {
+  "anchor": "bottom",
+  "x": -100,
+  "y": -38,
+  "w": 200,
+  "h": 11
+ },
+ "exp_fill": {
+  "anchor": "bottom",
+  "x": -90,
+  "y": -36,
+  "w": 180,
+  "h": 7,
+  "note": "listener image, split left; EXP text vanilla font centred, top y -36"
+ },
+ "hp_panel": {
+  "anchor": "bottom",
+  "x": -101,
+  "y": -63,
+  "w": 91,
+  "h": 22
+ },
+ "mp_panel": {
+  "anchor": "bottom",
+  "x": 10,
+  "y": -63,
+  "w": 91,
+  "h": 22
+ },
+ "hp_fill": {
+  "anchor": "bottom",
+  "x": -96,
+  "y": -50,
+  "w": 81,
+  "h": 5,
+  "note": "split left; HP text centred x -54, top y -60"
+ },
+ "mp_fill": {
+  "anchor": "bottom",
+  "x": 15,
+  "y": -50,
+  "w": 81,
+  "h": 5,
+  "note": "split right; MP text centred x +54, top y -60"
+ },
+ "icon_heart": {
+  "anchor": "bottom",
+  "x": -97,
+  "y": -61,
+  "w": 9,
+  "h": 8
+ },
+ "icon_mana": {
+  "anchor": "bottom",
+  "x": 88,
+  "y": -62,
+  "w": 9,
+  "h": 10
+ },
+ "level_shield": {
+  "anchor": "bottom",
+  "x": -12,
+  "y": -67,
+  "w": 24,
+  "h": 28,
+  "note": "level = vanilla font text centred x 0, top y -57"
+ },
+ "laurel_bar_l": {
+  "anchor": "bottom",
+  "x": -113,
+  "y": -65,
+  "w": 12,
+  "h": 20
+ },
+ "laurel_bar_r": {
+  "anchor": "bottom",
+  "x": 101,
+  "y": -65,
+  "w": 12,
+  "h": 20
+ },
+ "laurel_skill_l": {
+  "anchor": "bottom",
+  "x": -64,
+  "y": -84,
+  "w": 12,
+  "h": 16
+ },
+ "laurel_skill_r": {
+  "anchor": "bottom",
+  "x": 52,
+  "y": -84,
+  "w": 12,
+  "h": 16
+ },
+ "skill_slot": {
+  "anchor": "bottom",
+  "x": -53,
+  "y": -96,
+  "w": 22,
+  "h": 22
+ },
+ "skill_slot_1": {
+  "anchor": "bottom",
+  "x": -53,
+  "y": -96,
+  "w": 22,
+  "h": 22,
+  "sprite": "skill_slot",
+  "icon": {
+   "x": -50,
+   "y": -93,
+   "w": 16,
+   "h": 16
+  }
+ },
+ "skill_badge_1": {
+  "anchor": "bottom",
+  "x": -52,
+  "y": -78,
+  "w": 21,
+  "h": 9,
+  "sprite": "badge_RLR"
+ },
+ "skill_slot_2": {
+  "anchor": "bottom",
+  "x": -25,
+  "y": -96,
+  "w": 22,
+  "h": 22,
+  "sprite": "skill_slot",
+  "icon": {
+   "x": -22,
+   "y": -93,
+   "w": 16,
+   "h": 16
+  }
+ },
+ "skill_badge_2": {
+  "anchor": "bottom",
+  "x": -24,
+  "y": -78,
+  "w": 21,
+  "h": 9,
+  "sprite": "badge_RRR"
+ },
+ "skill_slot_3": {
+  "anchor": "bottom",
+  "x": 3,
+  "y": -96,
+  "w": 22,
+  "h": 22,
+  "sprite": "skill_slot",
+  "icon": {
+   "x": 6,
+   "y": -93,
+   "w": 16,
+   "h": 16
+  }
+ },
+ "skill_badge_3": {
+  "anchor": "bottom",
+  "x": 4,
+  "y": -78,
+  "w": 21,
+  "h": 9,
+  "sprite": "badge_RLL"
+ },
+ "skill_ult_flames": {
+  "anchor": "bottom",
+  "x": 27,
+  "y": -105,
+  "w": 30,
+  "h": 34
+ },
+ "skill_slot_ult": {
+  "anchor": "bottom",
+  "x": 31,
+  "y": -96,
+  "w": 22,
+  "h": 22
+ },
+ "skill_slot_4": {
+  "anchor": "bottom",
+  "x": 31,
+  "y": -96,
+  "w": 22,
+  "h": 22,
+  "sprite": "skill_slot_ult",
+  "icon": {
+   "x": 34,
+   "y": -93,
+   "w": 16,
+   "h": 16
+  }
+ },
+ "skill_badge_4": {
+  "anchor": "bottom",
+  "x": 32,
+  "y": -78,
+  "w": 21,
+  "h": 9,
+  "sprite": "badge_RRL"
+ },
+ "_skills": [
+  "dagger_flick",
+  "shadow_lurk",
+  "shadowstep_execution",
+  "deaths_whisper"
+ ],
+ "_combos": [
+  "RLR",
+  "RRR",
+  "RLL",
+  "RRL"
+ ],
+ "compass_strip": {
+  "anchor": "top",
+  "x": -95,
+  "y": 8,
+  "w": 190,
+  "h": 11
+ },
+ "compass": {
+  "anchor": "top",
+  "line_y": 13,
+  "letters_y": 3,
+  "px_per_degree": 1.0,
+  "half_span": 88,
+  "note": "BetterHud circle compass; letters bottom at y 10, ticks cross the line"
+ },
+ "icon_diamond_small": {
+  "anchor": "top",
+  "x": -24,
+  "y": 21,
+  "w": 5,
+  "h": 5,
+  "note": "inline image before the distance text, top y 20"
+ },
+ "tracker_panel": {
+  "anchor": "top_right",
+  "x": -157,
+  "y": 6,
+  "w": 152,
+  "h": 42
+ },
+ "tracker_star": {
+  "anchor": "top_right",
+  "x": -161,
+  "y": 3,
+  "w": 13,
+  "h": 13
+ },
+ "checkbox": {
+  "anchor": "top_right",
+  "x": -149,
+  "y": 25,
+  "w": 7,
+  "h": 7,
+  "note": "rows at y 25 and 35 (box), text x +20, y 25 / 35"
+ },
+ "tracker_text": {
+  "anchor": "top_right",
+  "title_x": -142,
+  "title_y": 10,
+  "row_x": -137,
+  "row_y": [
+   25,
+   35
+  ],
+  "max_text_w": 126,
+  "note": "server truncates a row to max_text_w px of vanilla font (~22 chars)"
+ },
+ "chat_button": {
+  "anchor": "bottom_left",
+  "x": 4,
+  "y": -24,
+  "w": 18,
+  "h": 16,
+  "icon": "icon_chat",
+  "key": "T"
+ },
+ "menu_buttons": {
+  "anchor": "bottom_right",
+  "x0": -85,
+  "y": -24,
+  "pitch": 21,
+  "buttons": [
+   {
+    "icon": "icon_bag",
+    "key": "C",
+    "page": "character"
+   },
+   {
+    "icon": "icon_book",
+    "key": "J",
+    "page": "journal"
+   },
+   {
+    "icon": "icon_anvil",
+    "key": "K",
+    "page": "skills"
+   },
+   {
+    "icon": "icon_gear",
+    "key": "H",
+    "page": "help"
+   }
+  ],
+  "note": "shown only with the client mod (its default keys, HudKeybinds.java)"
+ }
+}
