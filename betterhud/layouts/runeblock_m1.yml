@@ -75,10 +75,31 @@ rb_m1:
       scale: 0.5
       x: -54
       y: -60
+      conditions:
+        1:
+          first: "health_percentage"
+          second: "0.3"
+          operation: ">"
       placeholder-string-format:
         number: "#,##0"
       outline: true
     3:
+      name: "rb_font"
+      pattern: "[health] // [max_health]"
+      color: "#FF5A4A"
+      align: "center"
+      scale: 0.5
+      x: -54
+      y: -60
+      conditions:
+        1:
+          first: "health_percentage"
+          second: "0.3"
+          operation: "<="
+      placeholder-string-format:
+        number: "#,##0"
+      outline: true
+    4:
       name: "rb_font"
       pattern: "[papi:arcane_mana] // [papi:arcane_mana_max]"
       color: "#F8F0E6"
@@ -87,7 +108,7 @@ rb_m1:
       x: 54
       y: -60
       outline: true
-    4:
+    5:
       name: "rb_font"
       pattern: "[papi:arcane_level]"
       color: "#3A220C"

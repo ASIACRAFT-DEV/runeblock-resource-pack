@@ -214,6 +214,11 @@ def exp_bar():
     hline(im, 8, 191, 0, BRONZE_DK); hline(im, 8, 191, 10, BRONZE_DK)
     hline(im, 9, 190, 0, BRONZE)
     # end connectors + diamond caps (the mockup's "◆—" ends)
+    # M2 (Nov 6): the progress ticks sit in the rim (every 18 px of the fill), not on the fill, so the centred
+    # "EXP n / m" text never crosses a tick (the M1 shots had ticks through the letters)
+    for k in range(1, 10):
+        x = 10 + 18 * k
+        px(im, x, 0, GOLD_MID); px(im, x, 1, GOLD_DK); px(im, x, 10, GOLD_DK)
     for side in (0, 1):
         cx = 3 if side == 0 else 196
         diamond(im, cx, 5, 3, GOLD_MID, OUTLINE, GOLD_HI)
@@ -227,9 +232,7 @@ def exp_fill():
     im = new(180, 7)
     for y, c in enumerate(XP):
         hline(im, 0, 179, y, c)
-    for x in range(0, 180, 18):
-        vline(im, x, 1, 5, rgb(0x000000, 60))
-    return im
+    return im   # M2: no ticks on the fill (they moved into the frame rim, see exp_bar)
 
 
 def bar_panel(hp):

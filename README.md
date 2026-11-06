@@ -68,6 +68,27 @@ HP / MP panels, level shield, EXP bar and the hotbar ring of the approved mockup
 - Check without a client: `python3 -I tools/composite_betterhud.py --build build.zip --out <dir>` places the generated pictures at the y
   decoded from the generated font ascents over the GUI-3 shot and compares them with `layout.json`.
 
+## Mockup HUD M2 (v0.8.1, ArcaneSouls 0.45.0)
+The skill row above the HP / MP panels: 4 slots (slot 4 = ultimate, gold frame + flames), the bound skill's icon, today's
+click combo in a badge, a clock-sweep cooldown with whole seconds, and a no-mana look (grey icon + veil). `python3 -I
+tools/gen_hud_m2.py` writes `betterhud/{images,layouts,huds}/runeblock_m2.yml`, `betterhud/assets/rb_m2/` and
+`betterhud/skill_icons.txt`; `runeblock_m2` is in `betterhud/config.yml` default-hud. Same gate as M1 (`%arcane_packhud%`).
+- Every changing picture is ONE `sequence` image picked by a listener (no per-skill conditions): BetterHud puts an empty
+  frame first when an image has a listener, so value k / max with max = number of files shows file k, 0 shows nothing.
+  Icon = 88 icons + 88 no-mana copies, value `%arcane_skill_<n>_icon%`; sweep = 16 frames, `%arcane_skill_<n>_cdpct%`
+  (0-100); badge = [combo, bow-mirrored combo], `%arcane_skill_<n>_badge%`; seconds = text `[papi:arcane_skill_<n>_cd]`
+  drawn while it isn't '0'. Same texture + y + scale = one shared glyph for all four slots (205 glyphs in all).
+- `skill_icons.txt` is the frame order and is **append-only**: ArcaneSouls maps a skill id to its line (jar resource
+  `pack-skill-icons.txt`, or `plugins/ArcaneSouls/pack-skill-icons.txt` if present). A new icon goes at the end; copy the
+  file to the box (or ship a jar) with the pack that adds it. A skill with no line shows an empty slot (boot line lists them).
+- Icons are the 64 px pack icons at layout `scale: 0.25` (16 GUI px, full detail at GUI 3/4). A sequence trims only empty
+  columns and shifts by trim x scale (rounded), so the generator gives column 0 and 63 one alpha-1 pixel: nothing is trimmed.
+- M1 fixes in the same version: HP numbers red (#FF5A4A) at <= 30 % (two text elements on BetterHud's `health_percentage`);
+  EXP progress ticks moved from the fill into the frame rim (the centred EXP text crossed them).
+- `tools/composite_betterhud.py` draws M1 + M2 (sequences, scaled glyphs, text conditions) for the states ready / cooldown /
+  nomana / empty / lowhp (`--set m2`). `MMO/tools/hudm2.js` reads the boss-bar glyphs a bot receives and maps them through
+  the build's font, so it checks which icon / sweep / badge BetterHud actually picked.
+
 ## Skill objects (v0.6.9)
 3D objects that fly in skills, for ArcaneSouls 0.35.0 (`fx: object`, `rbtelegraph{…;obj=…}`, `rbobject{}`), written by
 `python3 -I tools/skill_objects.py [--preview out.png]` (the preview is a headless ray cast, no client):

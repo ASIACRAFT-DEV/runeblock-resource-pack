@@ -1,5 +1,5 @@
-# Box plugins/BetterHud/config.yml (read 2026-11-06) + v0.8.0: runeblock_m1 in default-hud (both HUDs are gated on
-# %arcane_packhud%, so each player sees one). BetterHud rewrites this file at load (comments go).
+# Box plugins/BetterHud/config.yml (read 2026-11-06) + v0.8.0: runeblock_m1 in default-hud, v0.8.1: runeblock_m2 (skill row)
+# (the mockup HUDs and the old runeblock_hud are gated on %arcane_packhud%, so each player sees one set). BetterHud rewrites this file at load (comments go).
 debug: false
 auto-save-time: 300
 location-provide-time: 1
@@ -26,6 +26,7 @@ loading-head: random
 default-hud:
 - runeblock_hud
 - runeblock_m1
+- runeblock_m2
 default-popup: []
 default-compass: []
 load-minecraft-default-textures: false

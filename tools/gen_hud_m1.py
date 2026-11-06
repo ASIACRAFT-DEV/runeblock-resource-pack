@@ -38,13 +38,21 @@ FILLS = {
     'mp_fill': (27, 'right', {'class': 'placeholder', 'value': '(number)papi:arcane_mana',
                               'max': '(number)papi:arcane_mana_max'}),
 }
-TEXT_LIGHT, TEXT_EXP, TEXT_LEVEL = '#F8F0E6', '#F4EEDC', '#3A220C'
-# text: (pattern, centre x, top y, colour, shadow) in GUI px from the bottom centre (layout.json notes)
+TEXT_LIGHT, TEXT_EXP, TEXT_LEVEL, TEXT_LOW = '#F8F0E6', '#F4EEDC', '#3A220C', '#FF5A4A'
+LOW_HP = 0.3   # M2: HP numbers turn red at <= 30 % health (BetterHud health_percentage = health / max, 0..1)
+
+
+def cond(first, op, second):
+    return {'1': {'first': first, 'second': second, 'operation': op}}
+
+
+# text: (pattern, centre x, top y, colour, shadow, conditions) in GUI px from the bottom centre (layout.json notes)
 TEXTS = [
-    ('EXP [papi:arcane_xp] // [papi:arcane_xp_next]', 0, -36, TEXT_EXP, True),
-    ('[health] // [max_health]', -54, -60, TEXT_LIGHT, True),
-    ('[papi:arcane_mana] // [papi:arcane_mana_max]', 54, -60, TEXT_LIGHT, True),
-    ('[papi:arcane_level]', 0, -57, TEXT_LEVEL, False),
+    ('EXP [papi:arcane_xp] // [papi:arcane_xp_next]', 0, -36, TEXT_EXP, True, None),
+    ('[health] // [max_health]', -54, -60, TEXT_LIGHT, True, cond('health_percentage', '>', str(LOW_HP))),
+    ('[health] // [max_health]', -54, -60, TEXT_LOW, True, cond('health_percentage', '<=', str(LOW_HP))),
+    ('[papi:arcane_mana] // [papi:arcane_mana_max]', 54, -60, TEXT_LIGHT, True, None),
+    ('[papi:arcane_level]', 0, -57, TEXT_LEVEL, False, None),
 ]
 GATE = {'1': {'first': 'papi:arcane_packhud', 'second': "'true'", 'operation': '=='}}
 
@@ -63,7 +71,7 @@ def dump(obj, indent=0):
             out.append('%s%s:' % (pad, k))
             out.extend(dump(v, indent + 1))
         else:
-            out.append('%s%s: %s' % (pad, k, json.dumps(v) if isinstance(v, str) else str(v).lower() if isinstance(v, bool) else v))
+            out.append('%s%s: %s' % (pad, k, json.dumps(v) if isinstance(v, (str, list)) else str(v).lower() if isinstance(v, bool) else v))
     return out
 
 
@@ -87,8 +95,10 @@ def main():
         im = Image.open(os.path.join(ART, n + '.png')).convert('RGBA')
         el_images[str(i)] = {'name': P + n, 'x': L['x'], 'y': L['y'] + top_trim(im)}
     el_texts = {}
-    for i, (pattern, x, top, color, shadow) in enumerate(TEXTS, 1):
+    for i, (pattern, x, top, color, shadow, conditions) in enumerate(TEXTS, 1):
         t = {'name': 'rb_font', 'pattern': pattern, 'color': color, 'align': 'center', 'scale': 0.5, 'x': x, 'y': top}
+        if conditions:
+            t['conditions'] = conditions
         if pattern.startswith('[health]'):
             t['placeholder-string-format'] = {'number': '#,##0'}
         if shadow:
