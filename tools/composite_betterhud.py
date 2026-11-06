@@ -39,7 +39,7 @@ spec = importlib.util.spec_from_file_location('cm', os.path.join(HERE, 'composit
 cm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cm)
 
-HUDS = [('runeblock_m1', 'rb_m1'), ('runeblock_m2', 'rb_m2'), ('runeblock_m3', 'rb_m3')]   # draw order
+HUDS = [('runeblock_m1', 'rb_m1'), ('runeblock_m2', 'rb_m2'), ('runeblock_m3', 'rb_m3'), ('runeblock_m4', 'rb_m4')]   # draw order
 
 
 class Source:
@@ -217,6 +217,16 @@ def slot_state(st, n_icons, order):
             ph['papi:arcane_track_line_%d' % (i + 1)] = text
             ph['papi:arcane_track_line_%d_style' % (i + 1)] = str(style)
             out['rb_m3_box_%d' % (i + 1)] = box / 2
+    # M4 compass: heading in degrees, marker frame (0 none, 1-177, 178/179 off), distance text (ArcaneSouls 0.47.0)
+    cps = st.get('compass')
+    if cps:
+        adv = '42466662444626266666666666225656766666666466666666666666666464663666665662653666666646666664247'
+        w = sum(int(adv[ord(ch) - 32]) if 32 <= ord(ch) <= 126 else 9 for ch in cps['dist'])
+        ph['papi:arcane_compass_dist'] = cps['dist']
+        ph['papi:arcane_compass_dist_w'] = str(w)
+        out['rb_m4_dial'] = (int(cps['heading']) % 360 + 1) / 360
+        out['rb_m4_marker'] = cps['marker'] / 179
+        out['rb_m4_dist'] = w / 80
     out['rb_m1_hp_fill'] = st['hp'] / st['hpm']
     out['rb_m1_mp_fill'] = st['mp'] / st['mpm']
     out['rb_m1_exp_fill'] = st['xp'] / st['xpn']
@@ -239,7 +249,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--build', required=True)
     ap.add_argument('--out', required=True)
-    ap.add_argument('--set', default='all', choices=['m1', 'm2', 'm3', 'all'])
+    ap.add_argument('--set', default='all', choices=['m1', 'm2', 'm3', 'm4', 'all'])
     ap.add_argument('--shot', default=cm.DEF_SHOT)
     ap.add_argument('--client-jar', default=cm.DEF_JAR)
     a = ap.parse_args()
@@ -279,7 +289,7 @@ def main():
         for hud in huds:
             if only and hud.name not in only:
                 continue
-            if hud.gui != (50, 100) and not state.get('track'):
+            if (hud.gui == (100, 0) and not state.get('track')) or (hud.gui == (50, 0) and not state.get('compass')):
                 continue   # nothing to place / evaluate for the tracker when it is off
             for name, im, x, y, w, h in hud.place(state):
                 put_at(hud.gui, im, x, y, w, h)
@@ -323,18 +333,22 @@ def main():
     W, H = base.size
     gw, gh = W // G, H // G
     sets = {'m1': ['full', 'fight', 'nearly'], 'm2': ['ready', 'cooldown', 'nomana', 'empty', 'lowhp'],
-            'm3': ['track_fresh', 'track_contract', 'track_done', 'track_side']}
-    chosen = sets['m1'] + sets['m2'] + sets['m3'] if a.set == 'all' else sets[a.set]
+            'm3': ['track_fresh', 'track_contract', 'track_done', 'track_side'],
+            'm4': ['compass_ahead', 'compass_right', 'compass_behind', 'compass_here']}
+    chosen = sum(sets.values(), []) if a.set == 'all' else sets[a.set]
     for tag in chosen:
         st = slot_state(STATES[tag], len(order), order)
         c = canvas(st, gw, gh)
         out = base.copy()
         out.alpha_composite(c, (0, H - gh * G))
-        pre = 'm1' if tag in sets['m1'] else 'm2' if tag in sets['m2'] else 'm3'
+        pre = next(k for k, v in sets.items() if tag in v)
         out.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s.png' % (pre, tag)))
         if pre == 'm3':
             crop = out.crop((W - 175 * G, 0, W, 75 * G))
             crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_topright.png' % (pre, tag)))
+        elif pre == 'm4':
+            crop = out.crop((W // 2 - 110 * G, 0, W // 2 + 110 * G, 34 * G))
+            crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_top.png' % (pre, tag)))
         else:
             crop = out.crop((W // 2 - 130 * G, H - 112 * G, W // 2 + 130 * G, H))
             crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_bottom.png' % (pre, tag)))
@@ -375,6 +389,15 @@ STATES = {
                        track={'main': True, 'title': 'First Contract', 'lines': [
                            ('Slay 5 monsters outside', 2, 2), ('the walls (5/5)', 2, 0),
                            ("Load Hale's 3 supply", 1, 1), ('barrels', 1, 0)]}),
+    # M4 (heading deg, marker frame as PackCompass, dist text); with the M3 contract panel so the top row is complete
+    'compass_ahead': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                          compass={'heading': 352, 'marker': 89 + 8, 'dist': '155m'}),
+    'compass_right': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                          compass={'heading': 315, 'marker': 89 + 45, 'dist': '1,240m \u25b2'}),
+    'compass_behind': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                           compass={'heading': 90, 'marker': 178, 'dist': '35m'}),
+    'compass_here': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                         compass={'heading': 200, 'marker': 0, 'dist': 'Here'}),
     'track_side': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
                        track={'main': False, 'title': "The Crown's Ledger", 'lines': [
                            ('Carry the sealed ledger', 1, 1)] + [(l, 1, 0) for l in ['to Trader Oswin']]}),
