@@ -1,6 +1,3 @@
 {
-  "model": {
-    "type": "minecraft:model",
-    "model": "runeblock:item/class_weapon/ranger"
-  }
+  "model": { "type": "minecraft:model", "model": "runeblock:item/bow/class_ranger_weapon" }
 }

@@ -24,9 +24,9 @@ WEAPONS = {
 }
 # Classes with no class armour set (so no palette in make_class_armour): class -> (Rimeforged model, body ramp, glow ramp).
 # Ranger (2026-11-06, ballot line 3: Archers had no class weapon): weathered olive-khaki bow, emerald glow.
-EXTRA = {
-    'ranger': ('bow', ['#14120c', '#2e2a1a', '#5a5232', '#a89c6a'], ['#0a2a1a', '#1a6a3a', '#3ac070', '#a0ffc0']),
-}
+# 2026-11-06: the Ranger's Pathfinder Longbow is now its own drawing (tools/bow_art.py, item class_ranger_weapon), so the
+# recoloured Rimeforged bow is gone; was: 'ranger': ('bow', [olive-khaki ramp], [emerald ramp]).
+EXTRA = {}
 
 
 def recolour(img, body, glow):
