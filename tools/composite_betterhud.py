@@ -39,7 +39,7 @@ spec = importlib.util.spec_from_file_location('cm', os.path.join(HERE, 'composit
 cm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cm)
 
-HUDS = [('runeblock_m1', 'rb_m1'), ('runeblock_m2', 'rb_m2')]   # draw order
+HUDS = [('runeblock_m1', 'rb_m1'), ('runeblock_m2', 'rb_m2'), ('runeblock_m3', 'rb_m3')]   # draw order
 
 
 class Source:
@@ -86,15 +86,15 @@ class Hud:
         self.lay = load_yaml('layouts', hud + '.yml')[lay_name]
         self.imgs = load_yaml('images', hud + '.yml')
         h = load_yaml('huds', hud + '.yml')[hud]['layouts'][1]
-        assert h['gui'] == {'x': 50, 'y': 100}, 'composite assumes the bottom-centre anchor'
+        self.gui = (h['gui']['x'], h['gui']['y'])   # anchor in % of the screen (50/100 bottom centre, 100/0 top right)
         self.hx, self.hy = h['pixel']['x'], h['pixel']['y']
         if str(self.lay.get('offset', 'center')).lower() != 'left':
             problems.append('%s: layout offset is not left: every piece shifts left by half the widest picture' % hud)
         font_img = json.loads(src.read('assets/betterhud/font/hud_%s_image.json' % hud))
-        self.glyph = {}   # texture file -> (y, height)
+        self.glyph = {}   # texture file -> [(y, height)]: one glyph per y the file is drawn at (M3 boxes share a file)
         for p in font_img['providers']:
             if p.get('type') == 'bitmap':
-                self.glyph[p['file'].split(':', 1)[1]] = (decode_y(p['ascent']), p['height'])
+                self.glyph.setdefault(p['file'].split(':', 1)[1], []).append((decode_y(p['ascent']), p['height']))
         self.text_y = set()
         for rel in src.names('assets/betterhud/font/'):
             if os.path.basename(rel).startswith('hud_%s_text_' % hud):
@@ -144,7 +144,14 @@ class Hud:
                 x += round(cols[0] * scale)
                 fname = tex_name(file)
             im = self.texture(fname)
-            gy, gh = self.glyph[fname]
+            gl = self.glyph[fname]
+            gy, gh = gl[0]
+            if len(gl) > 1:   # same texture at several rows: the glyph whose y is the element's (+ the file's top trim)
+                want = el['y'] + (orig.getbbox()[1] if d['type'] == 'single' else 0)
+                hit = [g for g in gl if g[0] == want]
+                if not hit:
+                    self.problems.append('%s: no glyph at y %d (have %s)' % (name, want, [g[0] for g in gl]))
+                gy, gh = (hit or gl)[0]
             if gh != round(im.height * scale):
                 self.problems.append('%s: glyph height %d != texture %d x %.2f' % (fname, gh, im.height, scale))
             out.append((name, im, x, self.hy + gy, round(im.width * scale), gh))
@@ -160,7 +167,7 @@ class Hud:
             for ph, v in state['ph'].items():
                 s = s.replace('[%s]' % ph, str(v))
             col = tuple(int(t['color'][i:i + 2], 16) for i in (1, 3, 5))
-            out.append((s, self.hx + t['x'], self.hy + t['y'], col, bool(t.get('outline'))))
+            out.append((s, self.hx + t['x'], self.hy + t['y'], col, bool(t.get('outline')), t.get('align', 'center')))
         return out
 
 
@@ -172,7 +179,7 @@ def value(token, state):
         return float(token)
     except ValueError:
         pass
-    v = state['ph'][token.replace('(number)', '')]
+    v = state['ph'].get(token.replace('(number)', ''), '')
     return v
 
 
@@ -197,6 +204,19 @@ def slot_state(st, n_icons, order):
           'papi:arcane_mana': st['mp'], 'papi:arcane_mana_max': st['mpm'], 'papi:arcane_level': st['lv'],
           'papi:arcane_xp': st['xp'], 'papi:arcane_xp_next': st['xpn'], 'papi:arcane_packhud': 'true'}
     out = dict(st)
+    # M3 tracker (lines = what ArcaneSouls 0.46.0 sends: hudm3.js output), track = None -> panel off
+    tr = st.get('track')
+    ph['papi:arcane_track'] = 'true' if tr else 'false'
+    if tr:
+        ph['papi:arcane_track_main'] = 'true' if tr['main'] else 'false'
+        ph['papi:arcane_track_title'] = tr['title']
+        ph['papi:arcane_track_lines'] = str(len(tr['lines']))
+        out['rb_m3_panel'] = len(tr['lines']) / 4
+        for i in range(4):
+            text, style, box = tr['lines'][i] if i < len(tr['lines']) else ('', 0, 0)
+            ph['papi:arcane_track_line_%d' % (i + 1)] = text
+            ph['papi:arcane_track_line_%d_style' % (i + 1)] = str(style)
+            out['rb_m3_box_%d' % (i + 1)] = box / 2
     out['rb_m1_hp_fill'] = st['hp'] / st['hpm']
     out['rb_m1_mp_fill'] = st['mp'] / st['mpm']
     out['rb_m1_exp_fill'] = st['xp'] / st['xpn']
@@ -219,7 +239,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--build', required=True)
     ap.add_argument('--out', required=True)
-    ap.add_argument('--set', default='all', choices=['m1', 'm2', 'all'])
+    ap.add_argument('--set', default='all', choices=['m1', 'm2', 'm3', 'all'])
     ap.add_argument('--shot', default=cm.DEF_SHOT)
     ap.add_argument('--client-jar', default=cm.DEF_JAR)
     a = ap.parse_args()
@@ -246,6 +266,10 @@ def main():
 
         def put(im, x, y, w=None, h=None):
             c.alpha_composite(up(im, w, h), ((bx + x) * G, (by + y) * G))
+
+        def put_at(anchor, im, x, y, w=None, h=None):
+            ax, ay = gw * anchor[0] // 100, gh * anchor[1] // 100
+            c.alpha_composite(up(im, w, h), ((ax + x) * G, (ay + y) * G))
         if vanilla_xp:
             put(xp_bg, -91, -29)   # vanilla: bar at height - 32 + 3
         put(hotbar, -91, -22)
@@ -255,20 +279,26 @@ def main():
         for hud in huds:
             if only and hud.name not in only:
                 continue
+            if hud.gui != (50, 100) and not state.get('track'):
+                continue   # nothing to place / evaluate for the tracker when it is off
             for name, im, x, y, w, h in hud.place(state):
-                put(im, x, y, w, h)
+                put_at(hud.gui, im, x, y, w, h)
             if texts:
-                for s, x, y, col, outline in hud.texts(state):
+                ax, ay = gw * hud.gui[0] // 100, gh * hud.gui[1] // 100
+                for s, x, y, col, outline, align in hud.texts(state):
                     t = Image.new('RGBA', (font.width(s) + 2, 9), (0, 0, 0, 0))
                     if outline:
                         font.draw(t, 1, 1, s, (0, 0, 0), shadow=False)
                     font.draw(t, 0, 0, s, col, shadow=False)
-                    c.alpha_composite(up(t), ((bx + x - font.width(s) // 2) * G, (by + y) * G))
+                    left = x if align == 'left' else x - font.width(s) // 2
+                    c.alpha_composite(up(t), ((ax + left) * G, (ay + y) * G))
         return c
 
     # layout.json check: singles (+ trim) and the M2 icon / badge spots
     st0 = slot_state(STATES['ready'], len(order), order)
     for hud in huds:
+        if hud.gui != (50, 100):
+            continue   # top-right huds: checked against layout.json by tools/gen_hud_m3.py
         for name, im, x, y, w, h in hud.place(st0):
             key = name.replace('rb_m1_', '').replace('rb_m2_', '')
             d = hud.imgs[name]
@@ -292,17 +322,22 @@ def main():
     base = cm.clean_v032(shot, G)
     W, H = base.size
     gw, gh = W // G, H // G
-    sets = {'m1': ['full', 'fight', 'nearly'], 'm2': ['ready', 'cooldown', 'nomana', 'empty', 'lowhp']}
-    chosen = sets['m1'] + sets['m2'] if a.set == 'all' else sets[a.set]
+    sets = {'m1': ['full', 'fight', 'nearly'], 'm2': ['ready', 'cooldown', 'nomana', 'empty', 'lowhp'],
+            'm3': ['track_fresh', 'track_contract', 'track_done', 'track_side']}
+    chosen = sets['m1'] + sets['m2'] + sets['m3'] if a.set == 'all' else sets[a.set]
     for tag in chosen:
         st = slot_state(STATES[tag], len(order), order)
         c = canvas(st, gw, gh)
         out = base.copy()
         out.alpha_composite(c, (0, H - gh * G))
-        pre = 'm1' if tag in sets['m1'] else 'm2'
+        pre = 'm1' if tag in sets['m1'] else 'm2' if tag in sets['m2'] else 'm3'
         out.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s.png' % (pre, tag)))
-        crop = out.crop((W // 2 - 130 * G, H - 112 * G, W // 2 + 130 * G, H))
-        crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_bottom.png' % (pre, tag)))
+        if pre == 'm3':
+            crop = out.crop((W - 175 * G, 0, W, 75 * G))
+            crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_topright.png' % (pre, tag)))
+        else:
+            crop = out.crop((W // 2 - 130 * G, H - 112 * G, W // 2 + 130 * G, H))
+            crop.convert('RGB').save(os.path.join(a.out, '%s_gui3_%s_bottom.png' % (pre, tag)))
     for p in problems:
         print('PROBLEM', p)
     print('%d problem(s); wrote %s' % (len(problems), ', '.join(sorted(os.listdir(a.out)))))
@@ -327,6 +362,21 @@ STATES = {
                   skills=[{'sid': s} for s in ADVENTURER] + [None]),
     'lowhp': dict(hp=5, hpm=20, mp=70, mpm=100, lv=27, xp=1210, xpn=8460, slot=0,
                   skills=[{'sid': s} for s in ASSASSIN]),
+    # M3 (tracker lines: (text, style 1 open / 2 done, box 0 none / 1 open / 2 done)), exactly as ArcaneSouls 0.46.0
+    # sent them in tools/hudm3.js
+    'track_fresh': dict(hp=20, hpm=20, mp=40, mpm=40, lv=1, xp=0, xpn=30, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                        track={'main': True, 'title': 'Alone in the Woods', 'lines': [
+                            ('Something is pulling at', 1, 1), ('you. Follow it to the old', 1, 0), ('stones', 1, 0)]}),
+    'track_contract': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                           track={'main': True, 'title': 'First Contract', 'lines': [
+                               ('Slay 5 monsters outside', 1, 1), ('the walls (2/5)', 1, 0),
+                               ("Load Hale's 3 supply", 1, 1), ('barrels', 1, 0)]}),
+    'track_done': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                       track={'main': True, 'title': 'First Contract', 'lines': [
+                           ('Slay 5 monsters outside', 2, 2), ('the walls (5/5)', 2, 0),
+                           ("Load Hale's 3 supply", 1, 1), ('barrels', 1, 0)]}),
+    'track_side': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
+                       track={'main': False, 'title': 'The Lost Locket', 'lines': [('Talk to Widow Maren', 1, 1)]}),
 }
 
 
