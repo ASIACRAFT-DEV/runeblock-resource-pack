@@ -22,6 +22,11 @@ WEAPONS = {
     'cleric': ('mace', 'acc'), 'druid': ('staff', 'det'), 'kannagi': ('spear', 'acc'),
     'summoner': ('scythe', 'det'), 'enchanter': ('trident', 'det'),
 }
+# Classes with no class armour set (so no palette in make_class_armour): class -> (Rimeforged model, body ramp, glow ramp).
+# Ranger (2026-11-06, ballot line 3: Archers had no class weapon): weathered olive-khaki bow, emerald glow.
+EXTRA = {
+    'ranger': ('bow', ['#14120c', '#2e2a1a', '#5a5232', '#a89c6a'], ['#0a2a1a', '#1a6a3a', '#3ac070', '#a0ffc0']),
+}
 
 
 def recolour(img, body, glow):
@@ -50,9 +55,12 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--pack', default=os.path.join(here, '..', 'pack'))
     a = ap.parse_args()
     A = os.path.join(a.pack, 'assets', 'runeblock')
+    jobs = []
     for cls, (kind, glow_key) in WEAPONS.items():
         metal, main, acc = M.CLASSES[cls]
-        glow = {'acc': acc, 'det': M.DETAIL[cls], 'main': main}[glow_key]
+        jobs.append((cls, kind, main, {'acc': acc, 'det': M.DETAIL[cls], 'main': main}[glow_key]))
+    jobs += [(cls, kind, main, glow) for cls, (kind, main, glow) in EXTRA.items()]
+    for cls, kind, main, glow in jobs:
         model = json.load(open(os.path.join(A, 'models', 'item', 'gear', f'rimeforged_{kind}.json')))
         tex = {}
         for k, ref in model['textures'].items():
