@@ -376,7 +376,8 @@ STATES = {
                            ('Slay 5 monsters outside', 2, 2), ('the walls (5/5)', 2, 0),
                            ("Load Hale's 3 supply", 1, 1), ('barrels', 1, 0)]}),
     'track_side': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0, skills=[{'sid': s} for s in ADVENTURER] + [None],
-                       track={'main': False, 'title': 'The Lost Locket', 'lines': [('Talk to Widow Maren', 1, 1)]}),
+                       track={'main': False, 'title': "The Crown's Ledger", 'lines': [
+                           ('Carry the sealed ledger', 1, 1)] + [(l, 1, 0) for l in ['to Trader Oswin']]}),
 }
 
 
