@@ -285,11 +285,11 @@ def preview(arts, inv, bg, fr, path):
     for (x, y), k in zip(SLOT_ACC, worn):
         icon = arts[k].resize((16 * S, 16 * S), Image.NEAREST)
         shot.alpha_composite(icon, ((x + 1) * S, (y + 1) * S))
-    sheet = Image.new('RGBA', (176 * S + 20 + 4 * 8 * 32, max(166 * S, 2 * 8 * 32 + 10)), (40, 40, 44, 255))
+    sheet = Image.new('RGBA', (176 * S + 20 + 4 * 8 * 32, 166 * S + 240), (40, 40, 44, 255))
     sheet.alpha_composite(shot, (0, 0))
     for i, k in enumerate(arts):
         big = arts[k].resize((256, 256) if arts[k].size[0] == 32 else (128, 128), Image.NEAREST)
-        sheet.alpha_composite(big, (176 * S + 20 + (i % 4) * 256, (i // 4) * 266))
+        sheet.alpha_composite(big, (176 * S + 20 + (i % 4) * 256, 0) if i < 4 else (176 * S + 20 + (i - 4) * 160 + 64, 300))
     # a tooltip mock: background + frame stretched to 160x90
     tip = Image.new('RGBA', (160, 70), (0, 0, 0, 0))
     def nine(src, w, h, border):
@@ -300,7 +300,7 @@ def preview(arts, inv, bg, fr, path):
                 out.alpha_composite(piece, (dx0, dy0))
         return out
     tip.alpha_composite(nine(bg, 160, 70, 9)); tip.alpha_composite(nine(fr, 160, 70, 10))
-    sheet.alpha_composite(tip.resize((480, 210), Image.NEAREST), (176 * S + 20 + 2 * 256, 266 + 30))
+    sheet.alpha_composite(tip.resize((480, 210), Image.NEAREST), (20, 166 * S + 15))
     sheet.save(path)
 
 
