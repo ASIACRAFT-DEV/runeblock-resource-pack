@@ -98,6 +98,15 @@
       "chars": [
         "\ue10a"
       ]
+    },
+    {
+      "type": "bitmap",
+      "file": "runeblock:font/rank/tester.png",
+      "ascent": 7,
+      "height": 8,
+      "chars": [
+        "\ue10b"
+      ]
     }
   ]
 }
