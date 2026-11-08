@@ -187,7 +187,7 @@ def tooltip(vanilla_dir):
 
 # ───────────────────────── the inventory screen ─────────────────────────
 
-SLOT_ACC = [(7 + 18 * c, 83) for c in range(4)]   # inventory 9-12: the first main-inventory row, left 4
+SLOT_ACC = [(7 + 18 * c, 79) for c in range(4)]   # the tall screen's accessory row (Ring 1, Ring 2, Bracelet, Necklace)
 
 
 def slot_box(d, x, y, accent=False):
@@ -201,11 +201,15 @@ def slot_box(d, x, y, accent=False):
         for cx, cy in ((x, y), (x + 17, y), (x, y + 17), (x + 17, y + 17)): d.point((cx, cy), fill=GOLD_HI)
 
 
-def inventory(vanilla_dir):
+def inventory(vanilla_dir, tall=False):
+    """The player inventory in the RuneBlock panel look. tall (asc-mmo-gui 0.2.6 + ArcaneSouls 0.53.0, Ett 2026-11-08 02:11 UTC):
+    18 px taller, a row of 4 accessory slots right under the armour column (Ring 1, Ring 2, Bracelet, Necklace), the bag and
+    hotbar one row lower, the off-hand box 3 px right of vanilla (out of the player picture). Crafting grid/arrow/result unchanged."""
     van = Image.open(os.path.join(vanilla_dir, 'container/inventory.png')).convert('RGBA')
     im = van.copy()
     d = ImageDraw.Draw(im)
-    W, H = 176, 166
+    D = 18 if tall else 0
+    W, H = 176, 166 + D
     d.rectangle((0, 0, W - 1, H - 1), fill=(0, 0, 0, 0))
     # panel: soot body, bronze rim, gold corner filigree (the chest-menu panel look)
     d.rounded_rectangle((0, 0, W - 1, H - 1), radius=3, fill=FRAME)
@@ -222,24 +226,35 @@ def inventory(vanilla_dir):
     # player picture well
     d.rectangle((25, 7, 77, 77), fill=FRAME)
     d.rectangle((26, 8, 76, 76), fill=(6, 3, 4, 255))
-    # armour 4 + off-hand
+    # armour 4 + off-hand (tall: x 79, the slot sits at 80)
     for r in range(4): slot_box(d, 7, 7 + 18 * r)
-    slot_box(d, 76, 61)
-    # 2x2 crafting + arrow + result (kept: the screen draws items there)
+    slot_box(d, 79 if tall else 76, 61)
+    if tall:   # accessory row under the armour column, same box as every slot
+        for c in range(4): slot_box(d, 7 + 18 * c, 79)
+    # 2x2 crafting + arrow + result (unchanged)
     for r in range(2):
         for c in range(2): slot_box(d, 97 + 18 * c, 17 + 18 * r)
-    for i in range(8):   # arrow in bronze
-        d.line((135 + i, 36, 135 + i, 36), fill=ORN)
     d.polygon([(135, 34), (143, 34), (143, 31), (148, 36), (143, 41), (143, 38), (135, 38)], fill=ORN)
     slot_box(d, 153, 27)
     # divider line between the top part and the bag
-    d.line((7, 80, W - 8, 80), fill=FRAME)
-    for x in (W // 2 - 3, W // 2, W // 2 + 3): d.point((x, 80), fill=GOLD)
+    d.line((7, 80 + D, W - 8, 80 + D), fill=FRAME)
+    for x in (W // 2 - 3, W // 2, W // 2 + 3): d.point((x, 80 + D), fill=GOLD)
     # bag 3x9 + hotbar
     for r in range(3):
-        for c in range(9): slot_box(d, 7 + 18 * c, 83 + 18 * r, accent=(r == 0 and c < 4))
-    d.line((7, 138, W - 8, 138), fill=FRAME)
-    for c in range(9): slot_box(d, 7 + 18 * c, 141)
+        for c in range(9): slot_box(d, 7 + 18 * c, 83 + D + 18 * r)
+    d.line((7, 138 + D, W - 8, 138 + D), fill=FRAME)
+    for c in range(9): slot_box(d, 7 + 18 * c, 141 + D)
+    return im
+
+
+def ghost(kind):
+    """asc-mmo-gui 0.2.6 empty accessory slot sprite (like vanilla's ghost armour icons): the slot icon, faded."""
+    im = slot_icon(kind)
+    px = im.load()
+    for y in range(16):
+        for x in range(16):
+            r, g, b, a = px[x, y]
+            if a: px[x, y] = (r, g, b, 150)
     return im
 
 
@@ -256,6 +271,7 @@ def main():
     ap.add_argument('--vanilla', required=True, help='dir holding vanilla container/inventory.png + sprites/tooltip/*')
     ap.add_argument('--out', default='pack')
     ap.add_argument('--preview')
+    ap.add_argument('--mod', help='asc-mmo-gui src/main/resources: writes the tall inventory + ghost sprites there')
     a = ap.parse_args()
     arts = {'test_necklace': necklace(), 'test_bracelet': bracelet(), 'test_ring_vigor': ring(VIGOR), 'test_ring_focus': ring(FOCUS),
             'slot_necklace': slot_icon('necklace'), 'slot_bracelet': slot_icon('bracelet'), 'slot_ring': slot_icon('ring')}
@@ -274,18 +290,24 @@ def main():
         {"gui": {"scaling": {"type": "nine_slice", "width": 100, "height": 100, "border": 10, "stretch_inner": True}}}, indent=2) + '\n')
     inv = inventory(a.vanilla)
     write(a.out, 'assets/minecraft/textures/gui/container/inventory.png', inv)
-    if a.preview: preview(arts, inv, bg, fr, a.preview)
+    tall = inventory(a.vanilla, tall=True)
+    if a.mod:
+        write(a.mod, 'assets/asc-mmo-gui/textures/gui/container/inventory_accessories.png', tall)
+        for k in ('ring', 'bracelet', 'necklace'):
+            write(a.mod, f'assets/asc-mmo-gui/textures/gui/sprites/container/slot/acc_{k}.png', ghost(k))
+    if a.preview: preview(arts, tall, bg, fr, a.preview)
 
 
 def preview(arts, inv, bg, fr, path):
     """Inventory at 3x with the slot icons/accessories drawn in, plus the sprites at 8x."""
     S = 3
-    shot = inv.crop((0, 0, 176, 166)).resize((176 * S, 166 * S), Image.NEAREST)
-    worn = ['test_necklace', 'slot_bracelet', 'test_ring_vigor', 'slot_ring']
+    shot = inv.crop((0, 0, 176, 184)).resize((176 * S, 184 * S), Image.NEAREST)
+    worn = ['test_ring_vigor', 'ring', 'bracelet', 'test_necklace']
     for (x, y), k in zip(SLOT_ACC, worn):
-        icon = arts[k].resize((16 * S, 16 * S), Image.NEAREST)
+        src = arts[k] if k.startswith('test_') else ghost(k)
+        icon = src.resize((16 * S, 16 * S), Image.NEAREST)
         shot.alpha_composite(icon, ((x + 1) * S, (y + 1) * S))
-    sheet = Image.new('RGBA', (176 * S + 20 + 4 * 8 * 32, 166 * S + 240), (40, 40, 44, 255))
+    sheet = Image.new('RGBA', (176 * S + 20 + 4 * 8 * 32, 184 * S + 240), (40, 40, 44, 255))
     sheet.alpha_composite(shot, (0, 0))
     for i, k in enumerate(arts):
         big = arts[k].resize((256, 256) if arts[k].size[0] == 32 else (128, 128), Image.NEAREST)
@@ -300,7 +322,7 @@ def preview(arts, inv, bg, fr, path):
                 out.alpha_composite(piece, (dx0, dy0))
         return out
     tip.alpha_composite(nine(bg, 160, 70, 9)); tip.alpha_composite(nine(fr, 160, 70, 10))
-    sheet.alpha_composite(tip.resize((480, 210), Image.NEAREST), (20, 166 * S + 15))
+    sheet.alpha_composite(tip.resize((480, 210), Image.NEAREST), (20, 184 * S + 15))
     sheet.save(path)
 
 
