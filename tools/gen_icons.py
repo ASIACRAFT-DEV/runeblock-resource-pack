@@ -69,6 +69,8 @@ def palettes(classes_yml):
         m = re.match(r'^\s+name: "(.*)"', line)
         if m and skills and skills[-1][3] is None:
             skills[-1][3] = m.group(1)
+    if re.search(r'^schema: 2\s*$', open(classes_yml, encoding='utf-8').read(), re.M):
+        skills = schema2_skills(classes_yml)
     seen, out = set(), []
     for c, t, i, n in skills:
         if i in seen:
@@ -754,6 +756,95 @@ SKILLS = {
     'sidestep': [('wind', {})],
     'second_wind': [('heart', {})],
     'soul_bolt': [('orb', {}), ('arrow_trail', {})],
+    # ── Classes 1.0 (ArcaneSouls 0.48.0+, Ett's spec 2026-11-06): 5 classes + 14 subclasses ──
+    # Warrior
+    'heavy_strike': [('sword', {'ang': -45}), ('crack_lines', {})],
+    'war_cry': [('ring_waves', {}), ('fist', {'s': 0.6})],
+    'blood_rush': [('sword', {'ang': -60, 'scale': 0.9}), ('arrow_trail', {})],
+    'relentless': [('crossed_swords', {}), ('flame', {'s': 0.45, 'cy': 205})],
+    # Guardian
+    'fortress': [('tower', {}), ('shield', {'s': 0.5, 'cy': 175})],
+    'bulwark': [('shield', {'s': 0.85}), ('plus_small', {})],
+    'colossus': [('golem', {})],
+    # Samurai
+    'iai_strike': [('slash', {'n': 1, 'start': 160, 'span': 160}), ('katana', {'ang': -20})],
+    'focus': [('eye', {}), ('target_small', {})],
+    'transcendence': [('sun', {}), ('katana', {'ang': -45})],
+    # Berserker
+    'blood_frenzy': [('drop', {'s': 0.9}), ('arrow_trail', {})],
+    'bloodrage': [('maw', {}), ('drop_small', {})],
+    'world_splitter': [('crack', {}), ('hammer', {'ang': -35})],
+    # Archer
+    'power_shot': [('arrow', {'ang': -45}), ('burst_small', {})],
+    'quick_step': [('feather', {}), ('arrow_trail', {})],
+    'marked_target': [('target', {})],
+    'volley': [('arrow', {'ang': -65, 's': 0.7, 'cx': 100, 'cy': 140}), ('arrow', {'ang': -45, 's': 0.7}),
+               ('arrow', {'ang': -25, 's': 0.7, 'cx': 156, 'cy': 140})],
+    # Marksman
+    'snipe': [('target', {}), ('arrow', {'ang': -45, 's': 0.8})],
+    'deadeye': [('eye', {}), ('arrow', {'ang': -45, 's': 0.5, 'cx': 190, 'cy': 190})],
+    'headshot': [('target', {}), ('skull', {'s': 0.6, 'cy': 128})],
+    # Ranger
+    'rain_of_arrows': [('arrow', {'ang': 135, 's': 0.6, 'cx': 80, 'cy': 110}), ('arrow', {'ang': 135, 's': 0.6, 'cx': 140, 'cy': 90}),
+                       ('arrow', {'ang': 135, 's': 0.6, 'cx': 175, 'cy': 160})],
+    'trap': [('maw', {}), ('chain', {})],
+    'natures_barrage': [('arrows_down', {}), ('leaf', {'s': 0.55, 'cx': 190, 'cy': 70})],
+    # Mage
+    'arcane_bolt': [('orb', {'r': 52}), ('arrow_trail', {})],
+    'mana_shield': [('shield', {'s': 0.85}), ('drop_small', {})],
+    'arcane_surge': [('swirl', {}), ('arrows_up_small', {})],
+    'blink': [('figure', {'s': 0.7, 'cx': 150}), ('swirl_small', {})],
+    'arcane_overload': [('rune', {'sides': 6}), ('burst', {'n': 8, 'r1': 70, 'r2': 30})],
+    # Elementalist
+    'elemental_bolt': [('flame', {'s': 0.55, 'cx': 78, 'cy': 160}), ('snow', {'cx': 180, 'cy': 86, 'r': 48}), ('bolt', {'s': 0.55})],
+    'elemental_barrage': [('arrow_trail', {}), ('orb', {'r': 24, 'cx': 84, 'cy': 172}), ('orb', {'r': 26, 'cx': 132, 'cy': 124}),
+                          ('orb', {'r': 30, 'cx': 184, 'cy': 74})],
+    'cataclysm': [('crack_lines', {}), ('meteor', {})],
+    # Arcanist
+    'grand_arcane_surge': [('swirl', {}), ('crown', {'s': 0.5, 'cy': 50})],
+    'mana_font': [('ring_waves', {'r0': 70}), ('drop', {})],
+    'arcane_singularity': [('eclipse', {}), ('swirl', {'arms': 4, 'r': 70})],
+    # Riftwalker
+    'rift_blink': [('mirror', {}), ('swirl_small', {})],
+    'rift_step': [('figure', {'s': 0.7}), ('rune_small', {})],
+    'rift_collapse': [('crack_lines', {}), ('eclipse', {})],
+    # Priest
+    'heal': [('cross', {})],
+    'blessing': [('wings', {}), ('arrows_up_small', {})],
+    'smite': [('sun', {}), ('bolt', {'s': 0.6})],
+    'purify': [('stars_ring', {}), ('drop', {'s': 0.8})],
+    'divine_light': [('sun', {}), ('cross', {'s': 0.6})],
+    # Inquisitor
+    'holy_smite': [('sun', {}), ('hammer', {'ang': -35})],
+    'holy_fire': [('flame', {}), ('plus_small', {})],
+    'judgment': [('rune', {'sides': 3}), ('eye', {})],
+    # Oracle
+    'greater_heal': [('cross', {}), ('plus_small', {})],
+    'circle_of_renewal': [('ring_waves', {}), ('cross', {'s': 0.5})],
+    'divine_intervention': [('wings', {}), ('ankh', {})],
+    # Druid
+    'regrowth': [('leaf', {}), ('plus_small', {})],
+    'bloom': [('flower', {})],
+    'wild_growth': [('vines', {}), ('heart_small', {})],
+    'grove_of_life': [('ring_waves', {'r0': 110}), ('tree', {})],
+    # Rogue
+    'quick_strike': [('slash', {'n': 1}), ('dagger', {'ang': -45})],
+    'shadow_step': [('ghost', {}), ('arrow_trail', {})],
+    'poison_blade': [('dagger', {}), ('drop_small', {})],
+    'evasion': [('feather', {}), ('swirl_small', {})],
+    'killing_spree': [('blade_ring', {}), ('skull_small', {})],
+    # Assassin
+    'shadowmeld': [('moon', {}), ('ghost', {'s': 0.7})],
+    'ambush': [('eye', {'closed': True}), ('dagger', {'ang': -45, 'scale': 0.8})],
+    'death_mark': [('skull', {}), ('target_small', {})],
+    # Swashbuckler
+    'lunge': [('sword', {'ang': -45}), ('arrow_trail', {})],
+    'flourish': [('slash', {'n': 3})],
+    'blade_ballet': [('swirl', {'arms': 4, 'r': 70}), ('blade_ring', {'n': 4})],
+    # Reaver
+    'blood_strike': [('sword', {}), ('drop_small', {})],
+    'venom_blade': [('dagger', {'ang': -30}), ('heart_small', {})],
+    'reaping': [('claw', {}), ('heart_small', {})],
 }
 
 # Effects: (id, label, kind, colour, motif list)
@@ -1018,6 +1109,29 @@ def sheet(items, title, path, cols=7, scale=2):
     sh.save(path)
 
 
+
+def schema2_skills(classes_yml):
+    """Classes 1.0 (schema 2): classes.<id>.skills.<skill id> + subclass upgrades.<base>.id. Tier as ArcaneSouls
+    ClassRegistry: base active BASIC, base ultimate ADVANCED, subclass active INTERMEDIATE, subclass ultimate SAINT,
+    or the skill's own `tier:`. Adventurer kit skills keep the ADVENTURER frame."""
+    import yaml
+    d = yaml.safe_load(open(classes_yml, encoding='utf-8'))
+    out = []
+    adv = d.get('adventurer') or {}
+    for sid, sk in ((adv.get('skills') if isinstance(adv.get('skills'), dict) else {}) or {}).items():
+        out.append(['adventurer', 'ADVENTURER', sid, (sk or {}).get('name')])
+    for cid, cv in (d.get('classes') or {}).items():
+        sub = bool(cv.get('parent'))
+        def tier(sk):
+            if sk.get('tier'): return str(sk['tier']).upper()
+            ult = bool(sk.get('ultimate'))
+            return ('SAINT' if sub else 'ADVANCED') if ult else ('INTERMEDIATE' if sub else 'BASIC')
+        for sid, sk in (cv.get('skills') or {}).items():
+            out.append([cid, tier(sk), sid, sk.get('name')])
+        for base, up in (cv.get('upgrades') or {}).items():
+            out.append([cid, tier(up), up.get('id', base), up.get('name')])
+    return out
+
 def main():
     classes_yml, out_dir = sys.argv[1], sys.argv[2]
     sheet_dir = sys.argv[3] if len(sys.argv) > 3 else None
@@ -1051,13 +1165,14 @@ def main():
     if sheet_dir:
         os.makedirs(sheet_dir, exist_ok=True)
         order = ['guardian', 'samurai', 'monk', 'assassin', 'swashbuckler', 'bard', 'cleric', 'druid', 'kannagi', 'sorcerer', 'summoner', 'enchanter']
-        groups = [order[i:i + 4] for i in range(0, 12, 4)]
-        names = ['Warrior · Weapon', 'Weapon · Recovery', 'Recovery · Magic']
+        if not all(c in by_class for c in order):   # Classes 1.0: every class in classes.yml order, 5 per sheet
+            order = [c for c in by_class if c != 'adventurer']
+        groups = [order[i:i + 5] for i in range(0, len(order), 5)] if len(order) != 12 else [order[i:i + 4] for i in range(0, 12, 4)]
         for gi, grp in enumerate(groups):
             items = []
             for c in grp:
                 items += [(img, n, f'{c.title()} · {t}') for img, n, t in by_class[c]]
-            sheet(items, f'RuneBlock skill icons ({gi + 1}/3): ' + ', '.join(c.title() for c in grp), os.path.join(sheet_dir, f'skills_{gi + 1}.png'))
+            sheet(items, f'RuneBlock skill icons ({gi + 1}/{len(groups)}): ' + ', '.join(c.title() for c in grp), os.path.join(sheet_dir, f'skills_{gi + 1}.png'))
         sheet([(img, n, 'Adventurer') for img, n, t in by_class.get('adventurer', [])], 'RuneBlock skill icons: Adventurer kit', os.path.join(sheet_dir, 'skills_adventurer.png'), cols=4)
         sheet(effects, 'RuneBlock status icons: buffs, debuffs, statuses', os.path.join(sheet_dir, 'effects.png'), cols=8)
 
