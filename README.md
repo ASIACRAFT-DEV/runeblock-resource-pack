@@ -113,3 +113,10 @@ The picture behind the client mod's world map (asc-mmo-gui 0.2.5 `MapScreen`, da
 transparent, colours quantised to 256. 34 tiles for NEPTAR (`tiles.json` lists them; the WorldMap config carries the same list).
 Written by `python3 -I MMO/tools/map_tiles.py <box world/region dir> <1.21.11 client jar> pack/assets` from the box's region
 files; re-run it when the world changes enough to matter, then release a new pack version.
+
+## Background music (v0.8.11, RuneBlockMusic 0.1.0)
+- `assets/runeblock/sounds/music/<id>.ogg` = 18 original looping tracks (7 towns, 3 wilds tiers, 5 world bosses, Temple / Guardian /
+  dungeon boss), written by `MMO/tools/music/compose.py` (numpy synth, Vorbis q0, 11 MB). `assets/runeblock/sounds.json` = one event
+  `runeblock:music.<id>` per track, `stream: true`. The server plugin RuneBlockMusic picks the track and restarts it.
+- `assets/minecraft/sounds.json` mutes the vanilla game music (29 `music.*` events, `replace: true` with no sounds); menu and credits
+  music stay. New Minecraft versions may add `music.overworld.*` events: add them there.

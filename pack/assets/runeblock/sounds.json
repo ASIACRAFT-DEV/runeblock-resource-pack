@@ -1,0 +1,146 @@
+{
+  "music.town_cyrandel": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_cyrandel",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_azkharoth_echo": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_azkharoth_echo",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_rural_village": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_rural_village",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_ski_resort": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_ski_resort",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_tent_ville": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_tent_ville",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_port_city": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_port_city",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_desert_oasis": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_desert_oasis",
+        "stream": true
+      }
+    ]
+  },
+  "music.town_mountain_village": {
+    "sounds": [
+      {
+        "name": "runeblock:music/town_mountain_village",
+        "stream": true
+      }
+    ]
+  },
+  "music.wilds_early": {
+    "sounds": [
+      {
+        "name": "runeblock:music/wilds_early",
+        "stream": true
+      }
+    ]
+  },
+  "music.wilds_mid": {
+    "sounds": [
+      {
+        "name": "runeblock:music/wilds_mid",
+        "stream": true
+      }
+    ]
+  },
+  "music.wilds_end": {
+    "sounds": [
+      {
+        "name": "runeblock:music/wilds_end",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_hollow_stalker": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_hollow_stalker",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_ashen_colossus": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_ashen_colossus",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_frost_wyrm": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_frost_wyrm",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_silent_commander": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_silent_commander",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_temple": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_temple",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_guardian_raid": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_guardian_raid",
+        "stream": true
+      }
+    ]
+  },
+  "music.boss_dungeon": {
+    "sounds": [
+      {
+        "name": "runeblock:music/boss_dungeon",
+        "stream": true
+      }
+    ]
+  }
+}
