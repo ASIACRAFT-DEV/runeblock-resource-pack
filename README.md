@@ -120,3 +120,9 @@ files; re-run it when the world changes enough to matter, then release a new pac
   `runeblock:music.<id>` per track, `stream: true`. The server plugin RuneBlockMusic picks the track and restarts it.
 - `assets/minecraft/sounds.json` mutes the vanilla game music (29 `music.*` events, `replace: true` with no sounds); menu and credits
   music stay. New Minecraft versions may add `music.overworld.*` events: add them there.
+
+## Vanilla spider eyes off (v0.8.12)
+- `assets/minecraft/textures/entity/spider_eyes.png` = fully transparent 64×32. Minecraft draws a spider's eyes layer even when the
+  spider is invisible (1.21.11 `EyesFeatureRenderer` has no invisibility check), so BetterModel mobs on a SPIDER base (Nest Crawler
+  `RB_Q09_Nestling`, Broodmother) showed vanilla eyes in front of the model (Ett, 11:21 UTC Nov 14). Side effect: plain vanilla spiders
+  and cave spiders have no red eyes. kuwusaki yes (ballot 1571143081800114370).
