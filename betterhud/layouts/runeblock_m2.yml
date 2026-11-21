@@ -92,57 +92,169 @@ rb_m2:
   texts:
     1:
       name: "rb_font"
-      pattern: "[papi:arcane_skill_1_cd]"
-      color: "#FFF4D0"
+      pattern: "[papi:arcane_skill_1_cds]"
+      color: "#FFFFFF"
       align: "center"
-      scale: 0.5
+      scale: 0.75
       x: -42
-      y: -89
+      y: -91
       conditions:
         1:
           first: "papi:arcane_skill_1_cd"
           second: "'0'"
           operation: "!="
       outline: true
+    5:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_1_mp]"
+      color: "#59C2E6"
+      align: "right"
+      scale: 0.375
+      x: -34
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_1_mpc"
+          second: "'1'"
+          operation: "=="
+      outline: true
+    6:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_1_mp]"
+      color: "#F04040"
+      align: "right"
+      scale: 0.375
+      x: -34
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_1_mpc"
+          second: "'2'"
+          operation: "=="
+      outline: true
     2:
       name: "rb_font"
-      pattern: "[papi:arcane_skill_2_cd]"
-      color: "#FFF4D0"
+      pattern: "[papi:arcane_skill_2_cds]"
+      color: "#FFFFFF"
       align: "center"
-      scale: 0.5
+      scale: 0.75
       x: -14
-      y: -89
+      y: -91
       conditions:
         1:
           first: "papi:arcane_skill_2_cd"
           second: "'0'"
           operation: "!="
       outline: true
+    7:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_2_mp]"
+      color: "#59C2E6"
+      align: "right"
+      scale: 0.375
+      x: -6
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_2_mpc"
+          second: "'1'"
+          operation: "=="
+      outline: true
+    8:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_2_mp]"
+      color: "#F04040"
+      align: "right"
+      scale: 0.375
+      x: -6
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_2_mpc"
+          second: "'2'"
+          operation: "=="
+      outline: true
     3:
       name: "rb_font"
-      pattern: "[papi:arcane_skill_3_cd]"
-      color: "#FFF4D0"
+      pattern: "[papi:arcane_skill_3_cds]"
+      color: "#FFFFFF"
       align: "center"
-      scale: 0.5
+      scale: 0.75
       x: 14
-      y: -89
+      y: -91
       conditions:
         1:
           first: "papi:arcane_skill_3_cd"
           second: "'0'"
           operation: "!="
       outline: true
+    9:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_3_mp]"
+      color: "#59C2E6"
+      align: "right"
+      scale: 0.375
+      x: 22
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_3_mpc"
+          second: "'1'"
+          operation: "=="
+      outline: true
+    10:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_3_mp]"
+      color: "#F04040"
+      align: "right"
+      scale: 0.375
+      x: 22
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_3_mpc"
+          second: "'2'"
+          operation: "=="
+      outline: true
     4:
       name: "rb_font"
-      pattern: "[papi:arcane_skill_4_cd]"
-      color: "#FFF4D0"
+      pattern: "[papi:arcane_skill_4_cds]"
+      color: "#FFFFFF"
       align: "center"
-      scale: 0.5
+      scale: 0.75
       x: 42
-      y: -89
+      y: -91
       conditions:
         1:
           first: "papi:arcane_skill_4_cd"
           second: "'0'"
           operation: "!="
+      outline: true
+    11:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_4_mp]"
+      color: "#59C2E6"
+      align: "right"
+      scale: 0.375
+      x: 50
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_4_mpc"
+          second: "'1'"
+          operation: "=="
+      outline: true
+    12:
+      name: "rb_font"
+      pattern: "[papi:arcane_skill_4_mp]"
+      color: "#F04040"
+      align: "right"
+      scale: 0.375
+      x: 50
+      y: -83
+      conditions:
+        1:
+          first: "papi:arcane_skill_4_mpc"
+          second: "'2'"
+          operation: "=="
       outline: true

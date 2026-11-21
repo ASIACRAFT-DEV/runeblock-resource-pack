@@ -99,7 +99,7 @@ class Hud:
         for rel in src.names('assets/betterhud/font/'):
             if os.path.basename(rel).startswith('hud_%s_text_' % hud):
                 ft = json.loads(src.read(rel))
-                self.text_y |= {decode_y(p['ascent']) for p in ft['providers'] if p.get('type') == 'bitmap' and p.get('height') == 8}
+                self.text_y |= {decode_y(p['ascent']) for p in ft['providers'] if p.get('type') == 'bitmap' and p.get('height') in ((6, 8, 12) if hud == 'runeblock_m2' else (8,))}   # 2026-11-21: M2 has scaled texts (0.375 / 0.75)
         want = {t['y'] for t in self.lay.get('texts', {}).values()}
         if want != self.text_y:
             problems.append('%s: text rows in the generated fonts %s != layout %s' % (hud, sorted(self.text_y), sorted(want)))
@@ -167,7 +167,8 @@ class Hud:
             for ph, v in state['ph'].items():
                 s = s.replace('[%s]' % ph, str(v))
             col = tuple(int(t['color'][i:i + 2], 16) for i in (1, 3, 5))
-            out.append((s, self.hx + t['x'], self.hy + t['y'], col, bool(t.get('outline')), t.get('align', 'center')))
+            out.append((s, self.hx + t['x'], self.hy + t['y'], col, bool(t.get('outline')), t.get('align', 'center'),
+                        float(t.get('scale', 0.5))))
         return out
 
 
@@ -239,8 +240,12 @@ def slot_state(st, n_icons, order):
                 icon += n_icons
         out['rb_m2_icon_%d' % i] = icon / (2 * n_icons)
         out['rb_m2_cd_%d' % i] = (cd[0] / cd[1]) if cd else 0
-        out['rb_m2_badge_%d' % i] = 0.5   # 1 of 2: normal combo
-        ph['papi:arcane_skill_%d_cd' % i] = str(cd[0]) if cd else '0'
+        out['rb_m2_badge_%d' % i] = (3 if cd else 1) / 4   # badge4: 1 normal, 3 normal dimmed (on cooldown)
+        ph['papi:arcane_skill_%d_cd' % i] = str(int(-(-cd[0] // 1))) if cd else '0'
+        # ArcaneSouls 0.92.0: cds ("4.2" under 10 s), mp (cost), mpc (0 hide / 1 affordable / 2 can't afford)
+        ph['papi:arcane_skill_%d_cds' % i] = ('%.1f' % cd[0] if cd[0] < 10 else str(int(-(-cd[0] // 1)))) if cd else ''
+        ph['papi:arcane_skill_%d_mp' % i] = str(sk.get('mp', 10)) if sk else ''
+        ph['papi:arcane_skill_%d_mpc' % i] = '0' if not sk or cd else ('2' if sk.get('nomana') else '1')
     out['ph'] = ph
     return out
 
@@ -295,13 +300,19 @@ def main():
                 put_at(hud.gui, im, x, y, w, h)
             if texts:
                 ax, ay = gw * hud.gui[0] // 100, gh * hud.gui[1] // 100
-                for s, x, y, col, outline, align in hud.texts(state):
+                for s, x, y, col, outline, align, tscale in hud.texts(state):
                     t = Image.new('RGBA', (font.width(s) + 2, 9), (0, 0, 0, 0))
                     if outline:
                         font.draw(t, 1, 1, s, (0, 0, 0), shadow=False)
                     font.draw(t, 0, 0, s, col, shadow=False)
-                    left = x if align == 'left' else x - font.width(s) // 2
-                    c.alpha_composite(up(t), ((ax + left) * G, (ay + y) * G))
+                    f = tscale / 0.5   # 2026-11-21: scale 0.5 = the vanilla 8 px font; other scales resize the glyphs
+                    tw = round(font.width(s) * f)
+                    left = x if align == 'left' else x - tw if align == 'right' else x - tw // 2
+                    if f != 1:
+                        t = t.resize((max(1, round(t.width * f * G)), max(1, round(t.height * f * G))), Image.NEAREST)
+                        c.alpha_composite(t, ((ax + left) * G, (ay + y) * G))
+                    else:
+                        c.alpha_composite(up(t), ((ax + left) * G, (ay + y) * G))
         return c
 
     # layout.json check: singles (+ trim) and the M2 icon / badge spots
@@ -332,7 +343,7 @@ def main():
     base = cm.clean_v032(shot, G)
     W, H = base.size
     gw, gh = W // G, H // G
-    sets = {'m1': ['full', 'fight', 'nearly'], 'm2': ['ready', 'cooldown', 'nomana', 'empty', 'lowhp'],
+    sets = {'m1': ['full', 'fight', 'nearly'], 'm2': ['ready', 'cooldown', 'nomana', 'ett', 'empty', 'lowhp'],
             'm3': ['track_fresh', 'track_contract', 'track_done', 'track_side'],
             'm4': ['compass_ahead', 'compass_right', 'compass_behind', 'compass_here']}
     chosen = sum(sets.values(), []) if a.set == 'all' else sets[a.set]
@@ -372,6 +383,10 @@ STATES = {
     'nomana': dict(hp=17, hpm=20, mp=4, mpm=100, lv=27, xp=1210, xpn=8460, slot=0,
                    skills=[{'sid': ASSASSIN[0], 'nomana': True}, {'sid': ASSASSIN[1], 'cd': (3, 14)},
                            {'sid': ASSASSIN[2], 'nomana': True}, {'sid': ASSASSIN[3], 'nomana': True}]),
+    # 2026-11-21 Ett's mockup: ready (12) · cooling down 4.2 s · can't afford (24) · ult ready (80)
+    'ett': dict(hp=17, hpm=20, mp=20, mpm=100, lv=27, xp=1210, xpn=8460, slot=0,
+                skills=[{'sid': ASSASSIN[0], 'mp': 12}, {'sid': ASSASSIN[1], 'cd': (4.2, 14), 'mp': 18},
+                        {'sid': ASSASSIN[2], 'nomana': True, 'mp': 24}, {'sid': ASSASSIN[3], 'mp': 80}]),
     'empty': dict(hp=20, hpm=20, mp=40, mpm=40, lv=6, xp=12, xpn=104, slot=0,
                   skills=[{'sid': s} for s in ADVENTURER] + [None]),
     'lowhp': dict(hp=5, hpm=20, mp=70, mpm=100, lv=27, xp=1210, xpn=8460, slot=0,

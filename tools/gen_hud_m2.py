@@ -62,6 +62,7 @@ m1 = _load('gen_hud_m1')       # yaml writer + the packhud gate
 CD_FRAMES = 16
 ICON_SCALE = 0.25              # 64 px texture -> 16 GUI px
 CD_TEXT = '#FFF4D0'
+MP_OK, MP_NO = '#59C2E6', '#F04040'   # 2026-11-21 Ett: cost blue when affordable, red when not
 
 
 def icon_order():
@@ -119,8 +120,9 @@ def main():
     for i, combo in enumerate(gm.COMBOS):
         gold = i == 3
         mir = ''.join('L' if ch == 'R' else 'R' for ch in combo)
-        gm.combo_badge(combo, gold).save(os.path.join(OUT, 'badge', 'badge_%d_normal.png' % (i + 1)))
-        gm.combo_badge(mir, gold).save(os.path.join(OUT, 'badge', 'badge_%d_mirrored.png' % (i + 1)))
+        # 2026-11-21 Ett's mockup: squares (amber R / cyan L), brown while on cooldown (ArcaneSouls 0.92.0 skill_<n>_badge4)
+        for name, cb, dim in (('normal', combo, False), ('mirrored', mir, False), ('normal_dim', combo, True), ('mirrored_dim', mir, True)):
+            gm.combo_squares(cb, gold, dim).save(os.path.join(OUT, 'badge', 'badge_%d_%s.png' % (i + 1, name)))
     for n in ('skill_slot', 'skill_slot_ult', 'skill_ult_flames', 'laurel_skill_l', 'laurel_skill_r'):
         shutil.copyfile(os.path.join(ART, n + '.png'), os.path.join(OUT, n + '.png'))
 
@@ -141,8 +143,8 @@ def main():
             'setting': {'listener': {'class': 'placeholder', 'value': ph('skill_%d_cdpct' % s), 'max': '100'}}}
         images[P + 'badge_%d' % s] = {
             'type': 'sequence',
-            'files': ['rb_m2/badge/badge_%d_normal.png' % s, 'rb_m2/badge/badge_%d_mirrored.png' % s],
-            'setting': {'listener': {'class': 'placeholder', 'value': ph('skill_%d_badge' % s), 'max': '2'}}}
+            'files': ['rb_m2/badge/badge_%d_%s.png' % (s, k) for k in ('normal', 'mirrored', 'normal_dim', 'mirrored_dim')],
+            'setting': {'listener': {'class': 'placeholder', 'value': ph('skill_%d_badge4' % s), 'max': '4'}}}
 
     def top_trim(rel):
         im = Image.open(os.path.join(BH, 'assets', rel)).convert('RGBA')
@@ -178,9 +180,16 @@ def main():
     el_texts = {}
     for s in range(1, 5):
         ic = L['skill_slot_%d' % s]['icon']
-        el_texts[str(s)] = {'name': 'rb_font', 'pattern': '[papi:arcane_skill_%d_cd]' % s, 'color': CD_TEXT,
-                            'align': 'center', 'scale': 0.5, 'x': ic['x'] + ic['w'] // 2, 'y': ic['y'] + 4,
+        # 2026-11-21 Ett's mockup: a big "4.2" cooldown in the icon centre (ArcaneSouls 0.92.0 skill_<n>_cds) ...
+        el_texts[str(s)] = {'name': 'rb_font', 'pattern': '[papi:arcane_skill_%d_cds]' % s, 'color': '#FFFFFF',
+                            'align': 'center', 'scale': 0.75, 'x': ic['x'] + ic['w'] // 2, 'y': ic['y'] + 2,
                             'conditions': m1.cond('papi:arcane_skill_%d_cd' % s, '!=', "'0'"), 'outline': True}
+        # ... and the mana cost at the icon's bottom-right: blue when affordable, red when not (skill_<n>_mp / _mpc)
+        for k, (state, col) in enumerate((("'1'", MP_OK), ("'2'", MP_NO))):
+            el_texts[str(4 + 2 * (s - 1) + k + 1)] = {
+                'name': 'rb_font', 'pattern': '[papi:arcane_skill_%d_mp]' % s, 'color': col, 'align': 'right',
+                'scale': 0.375, 'x': ic['x'] + ic['w'], 'y': ic['y'] + ic['h'] - 6,
+                'conditions': m1.cond('papi:arcane_skill_%d_mpc' % s, '==', state), 'outline': True}
     lay = {'rb_m2': {'offset': 'left', 'conditions': m1.GATE, 'images': el_images, 'texts': el_texts}}
     hud = {'runeblock_m2': {'layouts': {'1': {'name': 'rb_m2', 'gui': {'x': 50, 'y': 100}, 'pixel': {'x': 0, 'y': 0}}}}}
 

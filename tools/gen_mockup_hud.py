@@ -467,6 +467,29 @@ def combo_badge(combo, gold=False):
     return im
 
 
+def combo_squares(combo, gold=False, dim=False):
+    """Ett's skill HUD (2026-11-21 mockup): the click combo as three squares in a dark strip, amber = R, cyan = L,
+    all brown while the skill is on cooldown. Same 21x9 footprint as combo_badge, so the layout doesn't move."""
+    w, h = 21, 9
+    im = new(w, h)
+    rim = GOLD_MID if gold else BRONZE
+    rect(im, 1, 0, w - 2, h - 1, OUTLINE)
+    rect(im, 0, 1, w - 1, h - 2, OUTLINE)
+    rect(im, 1, 1, w - 2, h - 2, rim)
+    rect(im, 2, 2, w - 3, h - 3, rgb(0x1E1916))
+    hline(im, 2, w - 3, 1, GOLD_HI if gold else BRONZE_HI)
+    cols = {'R': (rgb(0xF2A72A), rgb(0xFFD27A), rgb(0xA86A10)), 'L': (rgb(0x36C6E0), rgb(0x9FF0FF), rgb(0x1A7F94))}
+    dimc = (rgb(0x6E4A22), rgb(0x8C6230), rgb(0x4A3016))
+    for i, k in enumerate(combo):
+        mid, hi, sh = dimc if dim else cols[k]
+        x0 = 3 + i * 5
+        rect(im, x0, 3, x0 + 3, 6, mid)          # 4x4 square, 1 px gap
+        hline(im, x0, x0 + 3, 3, hi)             # light top edge
+        rect(im, x0 + 3, 4, x0 + 3, 6, sh)       # shaded right edge
+        hline(im, x0, x0 + 3, 6, sh)             # shaded bottom edge
+    return im
+
+
 def key_badge(k):
     im = new(7, 9)
     rect(im, 1, 0, 5, 8, OUTLINE); rect(im, 0, 1, 6, 7, OUTLINE)
