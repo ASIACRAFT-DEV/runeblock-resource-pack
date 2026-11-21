@@ -95,9 +95,9 @@ rb_m2:
       pattern: "[papi:arcane_skill_1_cds]"
       color: "#FFFFFF"
       align: "center"
-      scale: 0.75
+      scale: 0.5
       x: -42
-      y: -91
+      y: -89
       conditions:
         1:
           first: "papi:arcane_skill_1_cd"
@@ -137,9 +137,9 @@ rb_m2:
       pattern: "[papi:arcane_skill_2_cds]"
       color: "#FFFFFF"
       align: "center"
-      scale: 0.75
+      scale: 0.5
       x: -14
-      y: -91
+      y: -89
       conditions:
         1:
           first: "papi:arcane_skill_2_cd"
@@ -179,9 +179,9 @@ rb_m2:
       pattern: "[papi:arcane_skill_3_cds]"
       color: "#FFFFFF"
       align: "center"
-      scale: 0.75
+      scale: 0.5
       x: 14
-      y: -91
+      y: -89
       conditions:
         1:
           first: "papi:arcane_skill_3_cd"
@@ -221,9 +221,9 @@ rb_m2:
       pattern: "[papi:arcane_skill_4_cds]"
       color: "#FFFFFF"
       align: "center"
-      scale: 0.75
+      scale: 0.5
       x: 42
-      y: -91
+      y: -89
       conditions:
         1:
           first: "papi:arcane_skill_4_cd"

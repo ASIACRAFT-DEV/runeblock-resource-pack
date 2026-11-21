@@ -99,7 +99,7 @@ class Hud:
         for rel in src.names('assets/betterhud/font/'):
             if os.path.basename(rel).startswith('hud_%s_text_' % hud):
                 ft = json.loads(src.read(rel))
-                self.text_y |= {decode_y(p['ascent']) for p in ft['providers'] if p.get('type') == 'bitmap' and p.get('height') in ((6, 8, 12) if hud == 'runeblock_m2' else (8,))}   # 2026-11-21: M2 has scaled texts (0.375 / 0.75)
+                self.text_y |= {decode_y(p['ascent']) for p in ft['providers'] if p.get('type') == 'bitmap' and p.get('height') in ((6, 8) if hud == 'runeblock_m2' else (8,))}   # M2 scaled texts: mana 0.375 (6 px), cooldown 0.5 (8 px, Ett 05:48 Nov 21); each text font also carries a 1.5x glyph set (9 / 12 px), not a row
         want = {t['y'] for t in self.lay.get('texts', {}).values()}
         if want != self.text_y:
             problems.append('%s: text rows in the generated fonts %s != layout %s' % (hud, sorted(self.text_y), sorted(want)))

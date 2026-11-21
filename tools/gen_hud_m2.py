@@ -182,7 +182,9 @@ def main():
         ic = L['skill_slot_%d' % s]['icon']
         # 2026-11-21 Ett's mockup: a big "4.2" cooldown in the icon centre (ArcaneSouls 0.92.0 skill_<n>_cds) ...
         el_texts[str(s)] = {'name': 'rb_font', 'pattern': '[papi:arcane_skill_%d_cds]' % s, 'color': '#FFFFFF',
-                            'align': 'center', 'scale': 0.75, 'x': ic['x'] + ic['w'] // 2, 'y': ic['y'] + 2,
+                            # Ett 05:48 Nov 21 "way too massive": 0.75 (12 px, "3.0" ~21 px) spilled past the 16 px icon;
+                            # 0.5 = 8 px tall, "9.9" / "12" ~14 px wide, vertically centred in the icon
+                            'align': 'center', 'scale': 0.5, 'x': ic['x'] + ic['w'] // 2, 'y': ic['y'] + 4,
                             'conditions': m1.cond('papi:arcane_skill_%d_cd' % s, '!=', "'0'"), 'outline': True}
         # ... and the mana cost at the icon's bottom-right: blue when affordable, red when not (skill_<n>_mp / _mpc)
         for k, (state, col) in enumerate((("'1'", MP_OK), ("'2'", MP_NO))):
